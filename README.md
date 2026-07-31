@@ -1,5 +1,7 @@
 # Solo & Co OS
 
+[![test](https://github.com/soloandco/soloandco-os/actions/workflows/test.yml/badge.svg)](https://github.com/soloandco/soloandco-os/actions/workflows/test.yml)
+
 인터뷰를 통해 사용자의 실제 업무 흐름을 파악하고, 1인 창업자·프리랜서·매니지먼트 조직에 맞는 파일 기반 Business OS를 생성하는 오픈소스 프로젝트입니다.
 
 > Status: `v0.1.0` experimental. 실제 사용자 인터뷰와 호환성 검증 전까지 구조가 변경될 수 있습니다.
@@ -69,8 +71,8 @@ npm test
 npm pack --dry-run
 ```
 
-GitHub Actions를 사용할 때는 [`docs/github-actions-test.yml`](docs/github-actions-test.yml)을
-`.github/workflows/test.yml`로 복사하면 Windows·macOS·Linux와 Node.js 20·22 조합을 검사합니다.
+GitHub Actions가 모든 push와 pull request에서 Windows·macOS·Linux 및
+Node.js 20·22 조합을 자동 검사합니다.
 
 ## 안전 원칙
 
