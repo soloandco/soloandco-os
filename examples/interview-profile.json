@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "0.1.0",
+  "workspaceName": "Sample Solo Studio",
+  "preset": "solo-founder",
+  "modules": ["automation", "content", "website"],
+  "primaryRevenueModels": ["consulting", "digital-product"],
+  "coreEntities": ["customers", "offers", "projects", "content"],
+  "reviewCadence": {
+    "weekly": true,
+    "monthly": true,
+    "quarterly": false
+  },
+  "sensitiveData": ["customer", "contract", "finance"],
+  "currentWorkflow": "Inquiry messages are scattered across chat, email, and notes.",
+  "biggestOperationalBottleneck": "Leads are not connected to proposals and collected revenue.",
+  "source": {
+    "provider": "example",
+    "model": "none",
+    "interviewedAt": "2026-07-31"
+  }
+}
+

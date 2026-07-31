@@ -1,0 +1,10 @@
+node_modules/
+*.tgz
+coverage/
+generated-*/
+.DS_Store
+Thumbs.db
+desktop.ini
+.env*
+*.pem
+*.key

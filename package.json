@@ -1,0 +1,44 @@
+{
+  "name": "create-soloandco-os",
+  "version": "0.1.0",
+  "description": "Interview-driven file-based Business OS generator for solo founders, freelancers, and management agencies",
+  "type": "module",
+  "bin": {
+    "create-soloandco-os": "./bin/create-soloandco-os.mjs"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "schemas/",
+    "prompts/",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "check": "npm test && npm pack --dry-run",
+    "example:agency": "node ./bin/create-soloandco-os.mjs --preset management-agency --target ./generated-agency",
+    "example:profile": "node ./bin/create-soloandco-os.mjs --profile ./examples/interview-profile.json --target ./generated-profile"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "business-os",
+    "solo-founder",
+    "freelancer",
+    "workspace-generator",
+    "claude"
+  ],
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/soloandco/soloandco-os.git"
+  },
+  "bugs": {
+    "url": "https://github.com/soloandco/soloandco-os/issues"
+  },
+  "homepage": "https://github.com/soloandco/soloandco-os#readme"
+}
+

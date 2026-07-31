@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/soloandco/soloandco-os/schemas/interview-profile.schema.json",
+  "title": "Solo & Co OS Interview Profile",
+  "type": "object",
+  "required": ["schemaVersion", "workspaceName", "preset", "modules"],
+  "additionalProperties": true,
+  "properties": {
+    "schemaVersion": { "const": "0.1.0" },
+    "workspaceName": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "preset": {
+      "enum": ["management-agency", "solo-founder", "freelancer"]
+    },
+    "modules": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "enum": ["automation", "content", "ventures", "website"] }
+    },
+    "primaryRevenueModels": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "coreEntities": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "reviewCadence": {
+      "type": "object",
+      "properties": {
+        "weekly": { "type": "boolean" },
+        "monthly": { "type": "boolean" },
+        "quarterly": { "type": "boolean" }
+      }
+    },
+    "sensitiveData": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "currentWorkflow": { "type": "string" },
+    "biggestOperationalBottleneck": { "type": "string" },
+    "source": {
+      "type": "object",
+      "properties": {
+        "provider": { "type": "string" },
+        "model": { "type": "string" },
+        "interviewedAt": { "type": "string", "format": "date" }
+      }
+    }
+  }
+}
+

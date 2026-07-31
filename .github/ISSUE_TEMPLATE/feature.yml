@@ -1,0 +1,30 @@
+name: Feature request
+description: Propose a workflow, preset, module, or migration improvement
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: workflow
+    attributes:
+      label: Recent real workflow
+      description: Describe the actual workflow and failure, using fictionalized data.
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: Current workaround
+    validations:
+      required: true
+  - type: dropdown
+    id: segment
+    attributes:
+      label: Primary user segment
+      options:
+        - management-agency
+        - solo-founder
+        - freelancer
+        - all
+    validations:
+      required: true
+

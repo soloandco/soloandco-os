@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "0.1.0",
+  "common": [
+    { "path": "ops", "title": "운영", "description": "주간·월간 운영과 회사 공통 업무" },
+    { "path": "knowledge", "title": "지식", "description": "재사용 가능한 플레이북·레퍼런스·교훈" },
+    { "path": "knowledge/_inbox", "title": "지식 인박스", "description": "아직 분류되지 않은 자료의 임시 투입구" },
+    { "path": "memory", "title": "기억", "description": "의사결정과 주기 리뷰" },
+    { "path": "memory/reviews", "title": "리뷰", "description": "주간·월간·분기 운영 리뷰" }
+  ],
+  "modules": {
+    "automation": [
+      { "path": "ops/automation", "title": "자동화", "description": "반복 점검·리뷰·검사 스크립트" }
+    ],
+    "content": [
+      { "path": "content", "title": "콘텐츠", "description": "채널별 콘텐츠·아이디어·성과" }
+    ],
+    "ventures": [
+      { "path": "ventures", "title": "벤처와 실험", "description": "새 수익 모델·제품·시장 실험" }
+    ],
+    "website": [
+      { "path": "website", "title": "홈페이지", "description": "사이트 콘텐츠·전환·분석·배포" }
+    ]
+  },
+  "presets": {
+    "management-agency": {
+      "title": "1인 사업자 매니지먼트",
+      "description": "여러 1인 창업자·프리랜서를 소속 멤버로 관리하는 조직",
+      "directories": [
+        { "path": "members", "title": "소속 멤버", "description": "멤버별 프로필·성장·고객·계약·정산" },
+        { "path": "members/_templates", "title": "멤버 템플릿", "description": "신규 멤버 온보딩에 복사하는 템플릿" },
+        { "path": "services/management", "title": "멤버 매니지먼트", "description": "선발·계약·온보딩·성장·갱신" },
+        { "path": "services/branding", "title": "브랜딩 지원", "description": "멤버 포지셔닝과 브랜드 자산" },
+        { "path": "services/website", "title": "홈페이지 지원", "description": "멤버 홈페이지·전환·배포" },
+        { "path": "services/content", "title": "콘텐츠 지원", "description": "멤버 콘텐츠·채널·사례화" },
+        { "path": "services/sales", "title": "고객 영업 지원", "description": "멤버의 최종 고객 발굴·상담·제안" },
+        { "path": "ops/sales", "title": "신규 멤버 영업", "description": "계약 전 멤버 후보 파이프라인" },
+        { "path": "ops/finance", "title": "회사 재무", "description": "회사 자체 매출·현금·비용" },
+        { "path": "ops/legal", "title": "법무", "description": "표준 계약·개인정보·정책" },
+        { "path": "ventures", "title": "자체 벤처", "description": "매니지먼트 외 회사 수익 실험" }
+      ]
+    },
+    "solo-founder": {
+      "title": "1인 창업자",
+      "description": "자신의 상품·고객·콘텐츠·재무·실험을 운영하는 1인 사업자",
+      "directories": [
+        { "path": "business", "title": "사업 정본", "description": "포지셔닝·목표·현재 상태" },
+        { "path": "offers", "title": "상품", "description": "판매하는 서비스·제품·가격·프로세스" },
+        { "path": "customers", "title": "고객", "description": "리드·상담·제안·계약·관계" },
+        { "path": "projects", "title": "프로젝트", "description": "기한과 결과가 있는 실행 단위" },
+        { "path": "content", "title": "콘텐츠", "description": "채널별 발행물·아이디어·성과" },
+        { "path": "finance", "title": "재무", "description": "청구·수금·비용·월 마감" },
+        { "path": "experiments", "title": "실험", "description": "가설·행동·수치·학습" },
+        { "path": "assets", "title": "자산", "description": "로고·사진·원본·공개 자산" }
+      ]
+    },
+    "freelancer": {
+      "title": "프리랜서",
+      "description": "여러 고객의 영업·프로젝트·납품·청구를 관리하는 독립 전문가",
+      "directories": [
+        { "path": "clients", "title": "고객사", "description": "고객별 프로필·계약·프로젝트·민감 자료" },
+        { "path": "services", "title": "서비스", "description": "판매 서비스·범위·가격·프로세스" },
+        { "path": "sales", "title": "영업", "description": "리드·상담·견적·제안" },
+        { "path": "projects", "title": "프로젝트", "description": "착수·실행·납품·회고" },
+        { "path": "content", "title": "콘텐츠", "description": "포트폴리오·채널·사례" },
+        { "path": "finance", "title": "재무", "description": "청구·수금·비용·세금 자료" },
+        { "path": "assets", "title": "재사용 자산", "description": "템플릿·브랜드·포트폴리오 원본" }
+      ]
+    }
+  }
+}

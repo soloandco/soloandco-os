@@ -1,0 +1,63 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import test from "node:test";
+
+import { buildPlan, generateWorkspace, loadProfile } from "../src/generator.mjs";
+
+test("management preset contains member management structure", () => {
+  const plan = buildPlan({ preset: "management-agency", target: "generated-test" });
+  const paths = new Set(plan.directories.map((entry) => entry.path));
+  assert(paths.has("members"));
+  assert(paths.has("services/management"));
+  assert(paths.has("services/sales"));
+});
+
+test("optional modules are added without duplicate folders", () => {
+  const plan = buildPlan({
+    preset: "solo-founder",
+    modules: ["automation", "ventures", "content"],
+    target: "generated-test",
+  });
+  const paths = plan.directories.map((entry) => entry.path);
+  assert(paths.includes("ops/automation"));
+  assert.equal(paths.filter((entry) => entry === "content").length, 1);
+});
+
+test("interview profile validates and drives generation", () => {
+  const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "soloandco-profile-test-"));
+  const profilePath = path.join(temporaryRoot, "profile.json");
+  try {
+    fs.writeFileSync(
+      profilePath,
+      JSON.stringify({
+        schemaVersion: "0.1.0",
+        workspaceName: "Evan Studio",
+        preset: "solo-founder",
+        modules: ["automation"],
+      }),
+    );
+    const profile = loadProfile(profilePath);
+    assert.equal(profile.preset, "solo-founder");
+  } finally {
+    fs.rmSync(temporaryRoot, { recursive: true, force: true });
+  }
+});
+
+test("generator creates starter files and refuses overwrite", () => {
+  const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "soloandco-os-test-"));
+  const target = path.join(temporaryRoot, "workspace");
+  try {
+    generateWorkspace({ preset: "management-agency", target, name: "Test Agency", modules: [] });
+    assert(fs.existsSync(path.join(target, ".soloandco", "config.json")));
+    assert(fs.existsSync(path.join(target, "members", "_templates", "member-overview.md")));
+    assert(fs.existsSync(path.join(target, "ops", "scorecard.md")));
+    assert.throws(
+      () => generateWorkspace({ preset: "management-agency", target, name: "Again", modules: [] }),
+      /Target must be empty or absent/,
+    );
+  } finally {
+    fs.rmSync(temporaryRoot, { recursive: true, force: true });
+  }
+});
