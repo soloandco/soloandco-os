@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "0.1.0",
+  "schemaVersion": "0.2.0",
   "common": [
     { "path": "ops", "title": "운영", "description": "주간·월간 운영과 회사 공통 업무" },
     { "path": "knowledge", "title": "지식", "description": "재사용 가능한 플레이북·레퍼런스·교훈" },
@@ -10,6 +10,9 @@
   "modules": {
     "automation": [
       { "path": "ops/automation", "title": "자동화", "description": "반복 점검·리뷰·검사 스크립트" }
+    ],
+    "brand": [
+      { "path": "brand", "title": "브랜드", "description": "색·서체·톤·로고 규격과 사용 규칙" }
     ],
     "content": [
       { "path": "content", "title": "콘텐츠", "description": "채널별 콘텐츠·아이디어·성과" }

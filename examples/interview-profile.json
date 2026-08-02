@@ -1,8 +1,17 @@
 {
-  "schemaVersion": "0.1.0",
+  "schemaVersion": "0.2.0",
   "workspaceName": "Sample Solo Studio",
   "preset": "solo-founder",
-  "modules": ["automation", "content", "website"],
+  "modules": ["automation", "brand", "content", "website"],
+  "brand": {
+    "colors": [
+      { "name": "Primary", "hex": "#2D6CDF", "usage": "Links and primary emphasis" },
+      { "name": "Support", "hex": "#3FAE6A", "usage": "Fills and bars", "textHex": "#1F7A45" }
+    ],
+    "fonts": { "heading": "Inter", "body": "Inter", "mono": "JetBrains Mono" },
+    "tone": "Plain and concrete. No superlatives.",
+    "avoid": ["Reusing a competitor palette"]
+  },
   "primaryRevenueModels": ["consulting", "digital-product"],
   "coreEntities": ["customers", "offers", "projects", "content"],
   "reviewCadence": {

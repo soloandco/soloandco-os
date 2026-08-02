@@ -4,8 +4,16 @@ All notable changes are documented here. This project follows Semantic Versionin
 
 ## [Unreleased]
 
+### Added
+
+- `brand` module: generates `brand/brand-guidelines.md` for people and a matching agent skill for AI tools
+- interview profile field `brand` with colors, text-safe color variants, fonts, tone, and an avoid list
+- interview prompt extracts brand colors and fonts from user materials instead of asking for them
+- generated brand skill disables itself and asks the user when no brand values were captured
+
 ### Changed
 
+- interview profile `schemaVersion` moves to `0.2.0`; `0.1.0` profiles still load and generate unchanged
 - interview prompt now reads user-provided materials (website, intro documents) first, extracts answers with sources, and asks only unanswered questions
 - interview prompt guides the first real record within ten minutes after generation
 - documented contribution scope and single-maintainer support expectations in README and CONTRIBUTING

@@ -6,6 +6,10 @@ import { fileURLToPath } from "node:url";
 const sourceDirectory = path.dirname(fileURLToPath(import.meta.url));
 const manifestPath = path.join(sourceDirectory, "workspace-presets.json");
 
+// Older profiles keep loading so an existing workspace is never blocked by a schema bump.
+const supportedProfileVersions = ["0.1.0", "0.2.0"];
+const hexPattern = /^#[0-9a-fA-F]{6}$/;
+
 export function loadManifest() {
   return JSON.parse(fs.readFileSync(manifestPath, "utf8"));
 }
@@ -15,8 +19,8 @@ export function loadProfile(profilePath) {
   const manifest = loadManifest();
   const errors = [];
 
-  if (profile.schemaVersion !== manifest.schemaVersion) {
-    errors.push(`schemaVersion must be ${manifest.schemaVersion}`);
+  if (!supportedProfileVersions.includes(profile.schemaVersion)) {
+    errors.push(`schemaVersion must be one of: ${supportedProfileVersions.join(", ")}`);
   }
   if (!profile.workspaceName || typeof profile.workspaceName !== "string") {
     errors.push("workspaceName is required");
@@ -30,8 +34,24 @@ export function loadProfile(profilePath) {
   for (const moduleName of profile.modules ?? []) {
     if (!manifest.modules[moduleName]) errors.push(`unknown module: ${moduleName}`);
   }
+  errors.push(...brandErrors(profile.brand));
   if (errors.length) throw new Error(`Invalid interview profile:\n- ${errors.join("\n- ")}`);
   return profile;
+}
+
+function brandErrors(brand) {
+  if (brand === undefined) return [];
+  if (typeof brand !== "object" || brand === null || Array.isArray(brand)) return ["brand must be an object"];
+  const errors = [];
+  if (brand.colors !== undefined && !Array.isArray(brand.colors)) errors.push("brand.colors must be an array");
+  for (const [index, color] of (Array.isArray(brand.colors) ? brand.colors : []).entries()) {
+    if (!color || typeof color.name !== "string" || !color.name) errors.push(`brand.colors[${index}].name is required`);
+    if (!hexPattern.test(color?.hex ?? "")) errors.push(`brand.colors[${index}].hex must look like #RRGGBB`);
+    if (color?.textHex !== undefined && !hexPattern.test(color.textHex)) {
+      errors.push(`brand.colors[${index}].textHex must look like #RRGGBB`);
+    }
+  }
+  return errors;
 }
 
 export function buildPlan({ preset, name = "My Business OS", target = ".", modules = [], profile }) {
@@ -105,6 +125,146 @@ function memberOverviewTemplate(date) {
   return `${frontmatter({ type: "Template", title: "멤버 프로필 템플릿", description: "신규 소속 멤버의 사업·계약·성장 현황을 시작하는 템플릿", date })}\n# 멤버 이름\n\n## 기본 정보\n\n- 사업/브랜드:\n- 대표:\n- 소속 시작:\n- 계약 기간:\n- 핵심 고객:\n- 핵심 상품:\n\n## 첫 90일 목표\n\n1.\n2.\n3.\n\n## 현재 병목과 다음 행동\n\n- 병목:\n- 담당자:\n- 다음 행동:\n- 재검토일:\n`;
 }
 
+// Skill folder names stay ASCII so every harness can load them. Rename freely afterwards.
+function workspaceSlug(name) {
+  const slug = String(name ?? "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return slug || "workspace";
+}
+
+function brandData(plan) {
+  const brand = plan.profile?.brand ?? {};
+  return {
+    colors: Array.isArray(brand.colors) ? brand.colors : [],
+    fonts: brand.fonts ?? {},
+    tone: brand.tone ?? "",
+    avoid: Array.isArray(brand.avoid) ? brand.avoid : [],
+  };
+}
+
+function colorRows(colors) {
+  if (!colors.length) return "|  |  |  |  |\n|  |  |  |  |\n|  |  |  |  |";
+  return colors
+    .map((color) => {
+      const forText = color.textHex ? `\`${color.textHex}\`` : "그대로 사용";
+      return `| ${color.name} | \`${color.hex}\` | ${color.usage ?? ""} | ${forText} |`;
+    })
+    .join("\n");
+}
+
+function fontLines(fonts) {
+  return [
+    `- 제목: ${fonts.heading ?? ""}`,
+    `- 본문: ${fonts.body ?? ""}`,
+    `- 코드·수치: ${fonts.mono ?? ""}`,
+  ].join("\n");
+}
+
+function brandCss(brand) {
+  const variables = brand.colors
+    .map((color, index) => `  --brand-${index + 1}:${color.hex}; /* ${color.name} */`)
+    .join("\n");
+  const family = brand.fonts.body ? `'${brand.fonts.body}', sans-serif` : "sans-serif";
+  return `\`\`\`css\n:root{\n${variables}\n}\nbody{ font-family:${family}; }\n\`\`\``;
+}
+
+function brandGuidelinesMarkdown(plan, date) {
+  const brand = brandData(plan);
+  const avoid = brand.avoid.length
+    ? brand.avoid.map((entry) => `- ${entry}`).join("\n")
+    : "- 아직 없음. 쓰면 안 되는 색·표현·이미지를 발견하면 여기에 적는다.";
+  return `${frontmatter({
+    type: "Reference",
+    title: "브랜드 규격",
+    description: "산출물에 적용하는 색·서체·톤의 정본",
+    date,
+  })}
+# 브랜드 규격
+
+이 파일이 브랜드 값의 정본이다. 값을 고치면 \`.claude/skills/${workspaceSlug(plan.name)}-brand/SKILL.md\`도 같이 고친다. 두 파일은 한 쌍이다.
+
+## 색
+
+| 이름 | HEX | 용도 | 글자에 쓸 때 |
+|---|---|---|---|
+${colorRows(brand.colors)}
+
+옅은 색은 면·막대·점처럼 칠하는 자리에만 쓰고, 글자에는 대비가 확보되는 어두운 값을 따로 적는다.
+
+## 서체
+
+${fontLines(brand.fonts)}
+
+## 톤
+
+${brand.tone || "문장의 태도를 한 줄로 적는다. 예: 담백하게, 과장하지 않는다."}
+
+## 쓰지 말 것
+
+${avoid}
+
+## 채우는 법
+
+1. 이미 만든 홈페이지·명함·소개서에서 실제로 쓰는 색을 뽑는다. 없으면 새로 정하지 말고 비워 둔다.
+2. 색마다 용도를 한 줄로 적는다. 용도 없는 색은 결국 안 쓰인다.
+3. 서체는 제목·본문 두 벌이면 충분하다.
+`;
+}
+
+function brandSkillMarkdown(plan) {
+  const brand = brandData(plan);
+  const slug = workspaceSlug(plan.name);
+  const description = `${plan.name}의 브랜드 색·서체 규격. ${plan.name} 이름으로 나가는 소개서·제안서·슬라이드·웹페이지·도식·썸네일을 만들거나 고칠 때 사용한다. 트리거 - 브랜드 색, 우리 색, 로고 색, 소개서, 제안서, 슬라이드.`;
+  const header = `---\nname: ${slug}-brand\ndescription: ${description}\n---\n\n# ${plan.name} 브랜드 규격\n\n값의 정본은 \`brand/brand-guidelines.md\`다. 색을 바꾸면 그쪽과 이 파일을 함께 고친다.\n`;
+
+  if (!brand.colors.length) {
+    return `${header}
+## 아직 쓸 수 없다
+
+이 워크스페이스의 브랜드 값은 **아직 채워지지 않았다.**
+
+\`brand/brand-guidelines.md\`를 먼저 채우고 그 값을 이 파일로 옮긴다. 그 전에는 이 스킬을 적용하지 말고, 색이나 서체가 필요한 산출물을 만들 때 사용자에게 직접 묻는다. 임의로 색을 골라 쓰지 않는다.
+`;
+  }
+
+  const avoid = brand.avoid.length ? brand.avoid.map((entry) => `- ${entry}`).join("\n") : "- 없음";
+  return `${header}
+## 색
+
+| 이름 | HEX | 용도 | 글자에 쓸 때 |
+|---|---|---|---|
+${colorRows(brand.colors)}
+
+## 서체
+
+${fontLines(brand.fonts)}
+
+## 쓰는 규칙
+
+- 한 화면에 모든 색을 뿌리지 않는다. 그 문서의 주제에 해당하는 색 하나를 강조색으로 잡고 나머지는 회색조로 간다.
+- 강조는 색보다 크기·굵기·여백으로 먼저 만든다. 그래도 부족할 때 색을 얹는다.
+- 표에 \`글자에 쓸 때\` 값이 따로 있으면 글자·숫자에는 반드시 그 값을 쓴다. 원색은 면에만 쓴다.
+
+## 쓰지 말 것
+
+${avoid}
+- 다른 회사나 제품의 브랜드 색. 만드는 물건의 주제가 그 회사일 때만 예외다.
+
+## 붙여 쓰는 CSS
+
+${brandCss(brand)}
+`;
+}
+
+function writeBrandFiles(target, plan, date) {
+  fs.writeFileSync(path.join(target, "brand", "brand-guidelines.md"), brandGuidelinesMarkdown(plan, date), "utf8");
+  const skillDirectory = path.join(target, ".claude", "skills", `${workspaceSlug(plan.name)}-brand`);
+  fs.mkdirSync(skillDirectory, { recursive: true });
+  fs.writeFileSync(path.join(skillDirectory, "SKILL.md"), brandSkillMarkdown(plan), "utf8");
+}
+
 function writeStarterFiles(target, plan, date) {
   fs.writeFileSync(path.join(target, "ops", "scorecard.md"), scorecardMarkdown(date), "utf8");
   fs.writeFileSync(path.join(target, "memory", "decisions.md"), decisionsMarkdown(date), "utf8");
@@ -115,6 +275,7 @@ function writeStarterFiles(target, plan, date) {
       "utf8",
     );
   }
+  if (plan.modules.includes("brand")) writeBrandFiles(target, plan, date);
 }
 
 export function generateWorkspace(options) {

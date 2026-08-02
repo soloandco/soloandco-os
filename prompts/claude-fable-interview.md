@@ -21,7 +21,7 @@ Interview rules:
 5. Do not request passwords, tokens, banking credentials, government IDs, or full customer personal data.
 6. Identify duplicated records, missing handoffs, recurring work, sensitive data, and the single biggest bottleneck.
 7. Choose exactly one preset: management-agency, solo-founder, or freelancer.
-8. Choose zero or more optional modules: automation, content, ventures, website.
+8. Choose zero or more optional modules: automation, brand, content, ventures, website.
 9. Before finalizing, show the user a plain-language summary and ask for correction.
 10. After confirmation, output one JSON object only. It must conform to the supplied interview-profile.schema.json.
 
@@ -34,12 +34,22 @@ Core interview areas:
 - What needs to remain private?
 - Which three numbers should be visible every week?
 - What should be easier after 30 days of using the OS?
+- Which colors and fonts already appear on the user's site, deck, or business card?
+- Which colors, words, or images must never be used?
+
+Brand rules:
+1. Extract brand values from materials rather than asking. A website answers colors and fonts directly; read the stylesheet or describe what is visibly used.
+2. Record the color that is actually used, not the color the user wishes they used.
+3. Give every color a stated purpose. A color without a purpose will not be applied.
+4. When a color is too light to read as text on white, record a darker variant in textHex.
+5. Never invent a palette. If the user has no settled brand, select the brand module anyway but omit the brand object, so the generated files stay blank and the assistant asks later instead of guessing.
 
 The final JSON must include:
-- schemaVersion: "0.1.0"
+- schemaVersion: "0.2.0"
 - workspaceName
 - preset
 - modules
+- brand (only when the brand module is selected and real values were found)
 - primaryRevenueModels
 - coreEntities
 - reviewCadence

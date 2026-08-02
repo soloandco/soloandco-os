@@ -23,7 +23,22 @@
 | `solo-founder` | 자신의 상품·고객·콘텐츠를 운영하는 1인 창업자 | 사업·상품·고객·프로젝트·재무·실험 |
 | `freelancer` | 여러 고객 프로젝트를 수행하는 프리랜서 | 고객사·서비스·영업·프로젝트·청구 |
 
-선택 모듈: `automation`, `content`, `ventures`, `website`.
+선택 모듈: `automation`, `brand`, `content`, `ventures`, `website`.
+
+## 브랜드 모듈
+
+`brand` 모듈을 선택하면 두 개의 파일이 함께 생성됩니다.
+
+| 파일 | 읽는 대상 |
+|---|---|
+| `brand/brand-guidelines.md` | 사람. 색·서체·톤의 정본 |
+| `.claude/skills/<이름>-brand/SKILL.md` | AI 코딩 도구 |
+
+인터뷰에서 홈페이지·소개 자료의 실제 색과 서체를 뽑아 두 파일에 채웁니다. 그다음부터는 "소개서 만들어줘"라고만 해도 자기 브랜드 색으로 나옵니다. 매번 색을 다시 불러줄 필요가 없습니다.
+
+정해진 브랜드가 아직 없으면 값을 비운 채 생성됩니다. 이때 스킬은 **스스로 적용을 중단하고** 사용자에게 색을 묻도록 쓰여 있습니다. AI가 임의로 색을 고르지 않게 하기 위한 장치입니다.
+
+스킬 폴더 이름은 ASCII로 만들어집니다. 한글 워크스페이스 이름은 `workspace-brand`로 떨어지므로 원하는 이름으로 바꿔 쓰면 됩니다.
 
 ## 빠른 시작
 
@@ -36,7 +51,7 @@ npm test
 
 node ./bin/create-soloandco-os.mjs \
   --preset solo-founder \
-  --modules automation,content,website \
+  --modules automation,brand,content,website \
   --target ../my-business-os \
   --name "My Business"
 ```

@@ -6,7 +6,10 @@
   "required": ["schemaVersion", "workspaceName", "preset", "modules"],
   "additionalProperties": true,
   "properties": {
-    "schemaVersion": { "const": "0.1.0" },
+    "schemaVersion": {
+      "description": "0.1.0 profiles stay valid and generate without brand files. New interviews emit 0.2.0.",
+      "enum": ["0.1.0", "0.2.0"]
+    },
     "workspaceName": { "type": "string", "minLength": 1, "maxLength": 100 },
     "preset": {
       "enum": ["management-agency", "solo-founder", "freelancer"]
@@ -14,7 +17,46 @@
     "modules": {
       "type": "array",
       "uniqueItems": true,
-      "items": { "enum": ["automation", "content", "ventures", "website"] }
+      "items": { "enum": ["automation", "brand", "content", "ventures", "website"] }
+    },
+    "brand": {
+      "description": "Added in 0.2.0. Drives brand/brand-guidelines.md and the generated brand skill. Omit it entirely when the user has no settled brand yet.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "colors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "hex"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "hex": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+              "usage": { "type": "string" },
+              "textHex": {
+                "description": "Darker variant for text when the base color lacks contrast on light backgrounds.",
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              }
+            }
+          }
+        },
+        "fonts": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "heading": { "type": "string" },
+            "body": { "type": "string" },
+            "mono": { "type": "string" }
+          }
+        },
+        "tone": { "type": "string" },
+        "avoid": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
     },
     "primaryRevenueModels": {
       "type": "array",
