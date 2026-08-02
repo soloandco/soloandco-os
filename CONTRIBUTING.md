@@ -2,6 +2,12 @@
 
 Thank you for helping improve Solo & Co OS.
 
+## Scope
+
+- Welcome anytime: template improvements, translations, documentation fixes, and preset refinements.
+- Maintainer-decided: folder structure, the interview-profile schema, validation rules, generator safety behavior, and licensing. Open an issue before implementing changes in these areas; they change slowly by design because generated workspaces depend on them.
+- This is a single-maintainer project. Issues are read, but there is no guaranteed response time.
+
 ## Before opening a change
 
 1. Do not include real member, customer, contract, settlement, credential, or private meeting data.

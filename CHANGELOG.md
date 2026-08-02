@@ -2,6 +2,14 @@
 
 All notable changes are documented here. This project follows Semantic Versioning.
 
+## [Unreleased]
+
+### Changed
+
+- interview prompt now reads user-provided materials (website, intro documents) first, extracts answers with sources, and asks only unanswered questions
+- interview prompt guides the first real record within ten minutes after generation
+- documented contribution scope and single-maintainer support expectations in README and CONTRIBUTING
+
 ## [0.1.0] - 2026-07-31
 
 ### Added
