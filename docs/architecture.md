@@ -1,5 +1,7 @@
 # Architecture
 
+> Public summary. The detailed working documents live in the maintainer private workspace; this file tracks only what is public.
+
 ## Pipeline
 
 ```text

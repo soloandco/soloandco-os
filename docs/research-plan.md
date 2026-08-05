@@ -1,5 +1,7 @@
 # Research plan before v1
 
+> Public summary. The detailed working documents live in the maintainer private workspace; this file tracks only what is public.
+
 Interview at least five users in each segment:
 
 - solo founders
