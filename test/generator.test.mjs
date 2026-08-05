@@ -123,6 +123,12 @@ test("brand module writes guidelines and an agent skill carrying the profile val
     const guidelines = fs.readFileSync(path.join(target, "brand", "brand-guidelines.md"), "utf8");
     assert(guidelines.includes("#1A2B3C"));
     assert(guidelines.includes("Test Sans"));
+    // the skill file is the single source of truth for brand values
+    assert(guidelines.includes(".claude/skills/evan-studio-brand/SKILL.md"));
+
+    // CLAUDE.md must exist as a pointer to AGENTS.md (Claude Code auto-loads CLAUDE.md only)
+    const claudePointer = fs.readFileSync(path.join(target, "CLAUDE.md"), "utf8");
+    assert(claudePointer.includes("AGENTS.md"));
 
     const skillPath = path.join(target, ".claude", "skills", "evan-studio-brand", "SKILL.md");
     const skill = fs.readFileSync(skillPath, "utf8");

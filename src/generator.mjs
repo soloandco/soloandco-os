@@ -110,7 +110,14 @@ function readmeMarkdown(plan) {
 }
 
 function agentsMarkdown(plan) {
-  return `# ${plan.name}\n\n이 워크스페이스는 Solo & Co OS \`${plan.preset}\` 프리셋으로 생성되었습니다.\n\n## 운영 규칙\n\n- 폴더 색인은 \`index.md\`를 사용합니다.\n- 프로젝트 폴더는 \`YYYY-MM-<slug>/\` 형식을 권장합니다.\n- 실제 수치가 없으면 \`unknown\`으로 기록합니다.\n- 활성 업무에는 담당자, 다음 행동, 재검토일을 기록합니다.\n- 고객·계약·정산 등 민감 정보는 공개 저장소에 올리지 않습니다.\n- 한 사실에는 하나의 정본만 두고 다른 문서에서는 링크합니다.\n`;
+  return `# ${plan.name}\n\n이 워크스페이스는 Solo & Co OS \`${plan.preset}\` 프리셋으로 생성되었습니다.\n\n> 이 파일이 워크스페이스 규칙의 정본입니다. \`CLAUDE.md\`는 이 파일을 가리키는 포인터이므로 규칙 변경은 여기에만 반영합니다.\n\n## 운영 규칙\n\n- 폴더 색인은 \`index.md\`를 사용합니다.\n- 프로젝트 폴더는 \`YYYY-MM-<slug>/\` 형식을 권장합니다.\n- 실제 수치가 없으면 \`unknown\`으로 기록합니다.\n- 활성 업무에는 담당자, 다음 행동, 재검토일을 기록합니다.\n- 고객·계약·정산 등 민감 정보는 공개 저장소에 올리지 않습니다.\n- 한 사실에는 하나의 정본만 두고 다른 문서에서는 링크합니다.\n`;
+}
+
+// Claude Code auto-loads CLAUDE.md (not AGENTS.md), so ship a pointer file.
+// Keeping the rules in ONE file avoids the two-copy drift this project's own
+// workspace hit before consolidating (2026-08-05).
+function claudeMarkdown(plan) {
+  return `# ${plan.name}\n\n**워크스페이스 규칙의 정본은 [AGENTS.md](AGENTS.md)입니다. 작업 시작 전 AGENTS.md를 읽으세요.**\n\n이 파일은 포인터입니다. 규칙 변경은 AGENTS.md에만 반영합니다. 같은 내용을 두 파일에 병기하면 반드시 한쪽만 갱신되어 갈라지기 때문입니다.\n`;
 }
 
 function scorecardMarkdown(date) {
@@ -183,7 +190,7 @@ function brandGuidelinesMarkdown(plan, date) {
   })}
 # 브랜드 규격
 
-이 파일이 브랜드 값의 정본이다. 값을 고치면 \`.claude/skills/${workspaceSlug(plan.name)}-brand/SKILL.md\`도 같이 고친다. 두 파일은 한 쌍이다.
+브랜드 값의 정본은 \`.claude/skills/${workspaceSlug(plan.name)}-brand/SKILL.md\` 하나다. 에이전트가 산출물을 만들 때 읽는 파일이 그쪽이기 때문이다. 이 문서는 사람이 읽고 처음 값을 채우는 안내판이며, 스킬에 값이 들어간 뒤에는 값 변경을 스킬에서만 한다. 두 파일의 값이 다르면 스킬을 따른다.
 
 ## 색
 
@@ -217,7 +224,7 @@ function brandSkillMarkdown(plan) {
   const brand = brandData(plan);
   const slug = workspaceSlug(plan.name);
   const description = `${plan.name}의 브랜드 색·서체 규격. ${plan.name} 이름으로 나가는 소개서·제안서·슬라이드·웹페이지·도식·썸네일을 만들거나 고칠 때 사용한다. 트리거 - 브랜드 색, 우리 색, 로고 색, 소개서, 제안서, 슬라이드.`;
-  const header = `---\nname: ${slug}-brand\ndescription: ${description}\n---\n\n# ${plan.name} 브랜드 규격\n\n값의 정본은 \`brand/brand-guidelines.md\`다. 색을 바꾸면 그쪽과 이 파일을 함께 고친다.\n`;
+  const header = `---\nname: ${slug}-brand\ndescription: ${description}\n---\n\n# ${plan.name} 브랜드 규격\n\n색·서체 값의 정본은 이 파일이다. \`brand/brand-guidelines.md\`는 처음 값을 채울 때 쓰는 안내판이며, 값 변경은 여기서만 한다.\n`;
 
   if (!brand.colors.length) {
     return `${header}
@@ -225,7 +232,7 @@ function brandSkillMarkdown(plan) {
 
 이 워크스페이스의 브랜드 값은 **아직 채워지지 않았다.**
 
-\`brand/brand-guidelines.md\`를 먼저 채우고 그 값을 이 파일로 옮긴다. 그 전에는 이 스킬을 적용하지 말고, 색이나 서체가 필요한 산출물을 만들 때 사용자에게 직접 묻는다. 임의로 색을 골라 쓰지 않는다.
+\`brand/brand-guidelines.md\`를 먼저 채우고 그 값을 이 파일로 옮긴다. 옮긴 뒤에는 이 파일이 정본이다. 그 전에는 이 스킬을 적용하지 말고, 색이나 서체가 필요한 산출물을 만들 때 사용자에게 직접 묻는다. 임의로 색을 골라 쓰지 않는다.
 `;
   }
 
@@ -304,5 +311,6 @@ export function generateWorkspace(options) {
   fs.writeFileSync(path.join(configDirectory, "config.json"), `${JSON.stringify(configuration, null, 2)}\n`, "utf8");
   fs.writeFileSync(path.join(target, "README.md"), readmeMarkdown(plan), "utf8");
   fs.writeFileSync(path.join(target, "AGENTS.md"), agentsMarkdown(plan), "utf8");
+  fs.writeFileSync(path.join(target, "CLAUDE.md"), claudeMarkdown(plan), "utf8");
   return plan;
 }
