@@ -12,6 +12,18 @@ test("management preset contains member management structure", () => {
   assert(paths.has("members"));
   assert(paths.has("services/management"));
   assert(paths.has("services/sales"));
+  assert(paths.has("ops/marketing"));
+});
+
+test("community and lecture modules add their folders", () => {
+  const plan = buildPlan({
+    preset: "solo-founder",
+    modules: ["community", "lecture"],
+    target: "generated-test",
+  });
+  const paths = plan.directories.map((entry) => entry.path);
+  assert(paths.includes("community"));
+  assert(paths.includes("lecture"));
 });
 
 test("optional modules are added without duplicate folders", () => {

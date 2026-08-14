@@ -14,8 +14,14 @@
     "brand": [
       { "path": "brand", "title": "브랜드", "description": "색·서체·톤·로고 규격과 사용 규칙" }
     ],
+    "community": [
+      { "path": "community", "title": "커뮤니티", "description": "참여자·모임·프로그램 운영과 기록" }
+    ],
     "content": [
       { "path": "content", "title": "콘텐츠", "description": "채널별 콘텐츠·아이디어·성과" }
+    ],
+    "lecture": [
+      { "path": "lecture", "title": "강의", "description": "강의·워크숍 기획·자료·수강 피드백" }
     ],
     "ventures": [
       { "path": "ventures", "title": "벤처와 실험", "description": "새 수익 모델·제품·시장 실험" }
@@ -39,6 +45,7 @@
         { "path": "ops/sales", "title": "신규 멤버 영업", "description": "계약 전 멤버 후보 파이프라인" },
         { "path": "ops/finance", "title": "회사 재무", "description": "회사 자체 매출·현금·비용" },
         { "path": "ops/legal", "title": "법무", "description": "표준 계약·개인정보·정책" },
+        { "path": "ops/marketing", "title": "회사 자체 채널", "description": "회사 본인 계정의 콘텐츠 기획·발행물·자료. 멤버를 지원하는 services/content와 구분한다" },
         { "path": "ventures", "title": "자체 벤처", "description": "매니지먼트 외 회사 수익 실험" }
       ]
     },

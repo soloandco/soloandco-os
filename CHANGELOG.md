@@ -6,6 +6,9 @@ All notable changes are documented here. This project follows Semantic Versionin
 
 ### Added
 
+- `community` module: a folder for running and recording participants, gatherings, and programs
+- `lecture` module: a folder for lecture and workshop planning, materials, and attendee feedback
+- `ops/marketing` directory in the management-agency preset: the company's own channels, kept separate from member-supporting `services/content`
 - `brand` module: generates `brand/brand-guidelines.md` for people and a matching agent skill for AI tools
 - interview profile field `brand` with colors, text-safe color variants, fonts, tone, and an avoid list
 - interview prompt extracts brand colors and fonts from user materials instead of asking for them

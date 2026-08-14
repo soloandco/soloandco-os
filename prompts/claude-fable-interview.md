@@ -21,7 +21,7 @@ Interview rules:
 5. Do not request passwords, tokens, banking credentials, government IDs, or full customer personal data.
 6. Identify duplicated records, missing handoffs, recurring work, sensitive data, and the single biggest bottleneck.
 7. Choose exactly one preset: management-agency, solo-founder, or freelancer.
-8. Choose zero or more optional modules: automation, brand, content, ventures, website.
+8. Choose zero or more optional modules: automation, brand, community, content, lecture, ventures, website.
 9. Before finalizing, show the user a plain-language summary and ask for correction.
 10. After confirmation, output one JSON object only. It must conform to the supplied interview-profile.schema.json.
 

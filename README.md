@@ -23,7 +23,7 @@
 | `solo-founder` | 자신의 상품·고객·콘텐츠를 운영하는 1인 창업자 | 사업·상품·고객·프로젝트·재무·실험 |
 | `freelancer` | 여러 고객 프로젝트를 수행하는 프리랜서 | 고객사·서비스·영업·프로젝트·청구 |
 
-선택 모듈: `automation`, `brand`, `content`, `ventures`, `website`.
+선택 모듈: `automation`, `brand`, `community`, `content`, `lecture`, `ventures`, `website`.
 
 ## 브랜드 모듈
 
