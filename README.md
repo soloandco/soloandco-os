@@ -66,6 +66,8 @@ node .soloandco/onboarding-check.mjs
 
 `OK: onboarding complete`가 나온 뒤 홈페이지·콘텐츠·마케팅·영업 업무를 시작합니다. 생성된 `AGENTS.md`가 Codex를, `CLAUDE.md` 포인터가 Claude를 같은 규칙에 연결합니다.
 
+이후 규칙·구조·자동화·스킬을 바꿀 때도 별도 지시 없이 Claude와 Codex 양쪽 적용을 완료 조건으로 삼습니다. 공통 규칙은 `AGENTS.md` 한 곳에서 관리합니다.
+
 생성 전에 구조만 확인할 수도 있습니다.
 
 ```bash

@@ -178,6 +178,8 @@ test("generator creates starter files and refuses overwrite", () => {
     assert(fs.existsSync(path.join(target, "members", "_templates", "member-overview.md")));
     assert(fs.existsSync(path.join(target, "ops", "scorecard.md")));
     assert.match(fs.readFileSync(path.join(target, "AGENTS.md"), "utf8"), /필수 온보딩 관문/);
+    assert.match(fs.readFileSync(path.join(target, "AGENTS.md"), "utf8"), /Claude와 Codex에 동일하게 적용/);
+    assert.match(fs.readFileSync(path.join(target, "AGENTS.md"), "utf8"), /\.claude\/skills/);
     assert.match(fs.readFileSync(path.join(target, "CLAUDE.md"), "utf8"), /AGENTS\.md/);
     assert.match(fs.readFileSync(path.join(target, "services", "content", "index.md"), "utf8"), /온보딩 관문/);
     assert.throws(

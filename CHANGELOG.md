@@ -19,6 +19,7 @@ All notable changes are documented here. This project follows Semantic Versionin
 
 ### Changed
 
+- generated workspaces now treat matching Claude and Codex behavior as the default completion condition for every rule, structure, automation, and skill change
 - generated README and Claude interview handoff now complete customer onboarding before the first homepage, content, marketing, sales, or brand task
 - interview profile `schemaVersion` moves to `0.2.0`; `0.1.0` profiles still load and generate unchanged
 - interview prompt now reads user-provided materials (website, intro documents) first, extracts answers with sources, and asks only unanswered questions
