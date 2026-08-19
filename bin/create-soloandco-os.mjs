@@ -55,10 +55,11 @@ async function main() {
   }
   const plan = generateWorkspace(options);
   process.stdout.write(`Created ${plan.preset} workspace at ${plan.target}\n`);
+  process.stdout.write("BLOCKED: complete onboarding.md before homepage, content, marketing, sales, or branding work\n");
+  process.stdout.write("Then run: node .soloandco/onboarding-check.mjs\n");
 }
 
 main().catch((error) => {
   process.stderr.write(`${error.message}\n`);
   process.exitCode = 1;
 });
-

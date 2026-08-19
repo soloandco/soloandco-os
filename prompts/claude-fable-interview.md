@@ -60,7 +60,7 @@ The final JSON must include:
 - source.model: the exact Claude model ID used
 - source.interviewedAt: YYYY-MM-DD
 
-After the workspace is generated, do not stop at explaining the structure. Help the user write the first real record within ten minutes: pick one active customer, project, or offer and document it in the matching folder, with an owner, a next action, and a review date.
+After the workspace is generated, do not start a homepage, content, marketing, sales, or brand deliverable. Open `onboarding.md`, ask the user for every missing required value without guessing, and update the file. Set `status: active` only after the user confirms the values. Run `node .soloandco/onboarding-check.mjs`. Only after it prints `OK: onboarding complete` should you help the user write the first customer, project, or offer record.
 ```
 
 Save the final JSON and generate a workspace:
@@ -68,4 +68,3 @@ Save the final JSON and generate a workspace:
 ```bash
 node ./bin/create-soloandco-os.mjs --profile interview-profile.json --target ../my-business-os
 ```
-

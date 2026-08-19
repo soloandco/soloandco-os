@@ -100,17 +100,123 @@ function frontmatter({ type, title, description, date, extra = "" }) {
   return `---\ntype: ${type}\ntitle: ${JSON.stringify(title)}\ndescription: ${JSON.stringify(description)}\ntimestamp: ${date}${extra}\n---\n`;
 }
 
+const gatedPathPattern = /(^|\/)(branding|content|marketing|sales|website)(\/|$)/;
+
 function indexMarkdown(entry, date) {
-  return `${frontmatter({ type: "Index", title: entry.title, description: entry.description, date })}\n# ${entry.title}\n\n${entry.description}\n`;
+  const gate = gatedPathPattern.test(entry.path)
+    ? `\n> **온보딩 관문**: 루트의 \`onboarding.md\`가 \`status: active\`가 아니면 이 폴더의 실행 업무를 시작하지 않습니다. 루트에서 \`node .soloandco/onboarding-check.mjs\`로 확인합니다.\n`
+    : "";
+  return `${frontmatter({ type: "Index", title: entry.title, description: entry.description, date })}\n# ${entry.title}\n\n${entry.description}\n${gate}`;
+}
+
+function onboardingMarkdown(plan, date) {
+  return `---
+type: Note
+title: ${JSON.stringify(`${plan.name} 필수 온보딩`)}
+description: 홈페이지·콘텐츠·마케팅·영업보다 먼저 확인하는 고객·상품 정의
+timestamp: ${date}
+status: blocked
+owner: ""
+review_at: ""
+primary_customer: ""
+offer: ""
+purchase_trigger: ""
+first_question: ""
+objection: ""
+decision_criteria: ""
+desired_change: ""
+excluded_customer: ""
+evidence: ""
+---
+
+# 필수 온보딩
+
+이 문서가 \`active\`가 되기 전에는 홈페이지·콘텐츠·마케팅·영업 실행을 시작하지 않습니다. 폴더가 있다는 것과 사업 맥락이 입력됐다는 것은 다릅니다.
+
+## 운영자가 확인할 정보
+
+프론트매터의 아래 값을 한 줄씩 채웁니다. 에이전트가 문서에서 추정하지 않고 운영자에게 확인받습니다.
+
+| 필드 | 답할 질문 |
+|---|---|
+| \`primary_customer\` | 가장 먼저 데려올 고객은 누구인가 |
+| \`offer\` | 그 고객에게 무엇을 파는가 |
+| \`purchase_trigger\` | 어떤 사건이 생겼을 때 돈을 쓰는가 |
+| \`first_question\` | 처음 가장 먼저 묻는 질문은 무엇인가 |
+| \`objection\` | 구매 전에 가장 크게 망설이는 이유는 무엇인가 |
+| \`decision_criteria\` | 무엇을 확인하면 구매를 결정하는가 |
+| \`desired_change\` | 구매 뒤 어떤 상태가 되길 원하는가 |
+| \`excluded_customer\` | 누구에게는 팔지 않는가 |
+| \`evidence\` | 이를 증명할 사례·수치·산출물은 무엇인가. 없으면 \`없음\`이라고 확인한다 |
+
+## 완료 방법
+
+1. 위 값을 운영자에게 확인받아 프론트매터에 적습니다.
+2. 값이 모두 확인되면 \`status: active\`로 바꿉니다.
+3. 루트에서 \`node .soloandco/onboarding-check.mjs\`를 실행합니다.
+4. \`OK: onboarding complete\`가 나온 뒤 다음 업무를 시작합니다.
+
+## 허용 범위
+
+완료 전에는 이 온보딩 작성, 기존 자료 수집, 증거 위치 확인만 합니다. 홈페이지 카피·콘텐츠 원고·캠페인·영업 제안은 만들지 않습니다.
+`;
+}
+
+function onboardingCheckScript() {
+  return `#!/usr/bin/env node
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
+const workspaceRoot = path.resolve(scriptDirectory, "..");
+const onboardingPath = path.join(workspaceRoot, "onboarding.md");
+const requiredFields = [
+  "primary_customer",
+  "offer",
+  "purchase_trigger",
+  "first_question",
+  "objection",
+  "decision_criteria",
+  "desired_change",
+  "excluded_customer",
+  "evidence",
+];
+
+if (!fs.existsSync(onboardingPath)) {
+  process.stderr.write("BLOCKED: onboarding.md not found\\n");
+  process.exit(1);
+}
+
+const content = fs.readFileSync(onboardingPath, "utf8");
+function fieldValue(name) {
+  const match = content.match(new RegExp("^" + name + ":\\\\s*(.*)$", "m"));
+  if (!match) return "";
+  return match[1].trim().replace(/^(["'])|(["'])$/g, "").trim();
+}
+
+const invalidValues = new Set(["", "unknown", "미정", "확인 필요"]);
+const missing = requiredFields.filter((field) => invalidValues.has(fieldValue(field)));
+const status = fieldValue("status");
+
+if (status !== "active" || missing.length > 0) {
+  process.stderr.write("BLOCKED: required onboarding is incomplete\\n");
+  if (status !== "active") process.stderr.write("- status must be active\\n");
+  for (const field of missing) process.stderr.write("- missing: " + field + "\\n");
+  process.exit(1);
+}
+
+process.stdout.write("OK: onboarding complete\\n");
+`;
 }
 
 function readmeMarkdown(plan) {
   const rows = plan.directories.map((entry) => `| \`${entry.path}/\` | ${entry.description} |`).join("\n");
-  return `# ${plan.name}\n\nSolo & Co OS의 \`${plan.preset}\` 프리셋으로 생성된 파일 기반 Business OS입니다.\n\n## 구조\n\n| 폴더 | 역할 |\n|---|---|\n${rows}\n\n## 첫 10분\n\n1. 각 폴더의 \`index.md\`를 읽습니다.\n2. 현재 진행 중인 고객·멤버·프로젝트 하나만 먼저 기록합니다.\n3. 모든 활성 문서에 담당자·다음 행동·재검토일을 둡니다.\n4. 실제 숫자가 없으면 0으로 추정하지 않고 \`unknown\`으로 기록합니다.\n5. 비밀번호·복구 코드·불필요한 개인정보는 저장하지 않습니다.\n\n생성 설정은 \`.soloandco/config.json\`에 있습니다.\n`;
+  return `# ${plan.name}\n\nSolo & Co OS의 \`${plan.preset}\` 프리셋으로 생성된 파일 기반 Business OS입니다.\n\n## 구조\n\n| 폴더 | 역할 |\n|---|---|\n${rows}\n\n## 첫 10분\n\n1. 다른 업무보다 먼저 루트의 [필수 온보딩](onboarding.md)을 운영자와 작성합니다.\n2. \`status: active\`로 바꾼 뒤 \`node .soloandco/onboarding-check.mjs\`를 실행합니다.\n3. 검사를 통과한 뒤 현재 진행 중인 고객·멤버·프로젝트 하나를 기록합니다.\n4. 모든 활성 문서에 담당자·다음 행동·재검토일을 둡니다.\n5. 실제 숫자가 없으면 0으로 추정하지 않고 \`unknown\`으로 기록합니다.\n6. 비밀번호·복구 코드·불필요한 개인정보는 저장하지 않습니다.\n\n온보딩을 통과하기 전에는 홈페이지·콘텐츠·마케팅·영업 실행을 시작하지 않습니다. 생성 설정은 \`.soloandco/config.json\`에 있습니다.\n`;
 }
 
 function agentsMarkdown(plan) {
-  return `# ${plan.name}\n\n이 워크스페이스는 Solo & Co OS \`${plan.preset}\` 프리셋으로 생성되었습니다.\n\n> 이 파일이 워크스페이스 규칙의 정본입니다. \`CLAUDE.md\`는 이 파일을 가리키는 포인터이므로 규칙 변경은 여기에만 반영합니다.\n\n## 운영 규칙\n\n- 폴더 색인은 \`index.md\`를 사용합니다.\n- 프로젝트 폴더는 \`YYYY-MM-<slug>/\` 형식을 권장합니다.\n- 실제 수치가 없으면 \`unknown\`으로 기록합니다.\n- 활성 업무에는 담당자, 다음 행동, 재검토일을 기록합니다.\n- 고객·계약·정산 등 민감 정보는 공개 저장소에 올리지 않습니다.\n- 한 사실에는 하나의 정본만 두고 다른 문서에서는 링크합니다.\n`;
+  return `# ${plan.name}\n\n이 워크스페이스는 Solo & Co OS \`${plan.preset}\` 프리셋으로 생성되었습니다.\n\n> 이 파일이 워크스페이스 규칙의 정본입니다. \`CLAUDE.md\`는 이 파일을 가리키는 포인터이므로 규칙 변경은 여기에만 반영합니다.\n\n## 필수 온보딩 관문\n\n- 모든 세션은 루트의 \`onboarding.md\`를 먼저 읽고 \`node .soloandco/onboarding-check.mjs\`를 실행합니다.\n- 문서가 없거나 검사가 실패하면 다른 요청보다 온보딩을 먼저 안내합니다. 운영자에게 필수 값을 하나씩 확인받고 문서에 기록합니다.\n- 온보딩 완료 전 허용되는 작업은 온보딩 작성, 기존 자료 수집, 증거 위치 확인뿐입니다.\n- 온보딩 완료 전에는 홈페이지 카피·콘텐츠 원고·마케팅 캠페인·영업 제안·브랜드 메시지를 만들거나 확정하지 않습니다.\n- 값을 기존 문서에서 추정하지 않습니다. 운영자가 확인한 뒤 \`status: active\`로 바꾸고 검사 통과를 확인합니다.\n\n## 운영 규칙\n\n- 폴더 색인은 \`index.md\`를 사용합니다.\n- 프로젝트 폴더는 \`YYYY-MM-<slug>/\` 형식을 권장합니다.\n- 실제 수치가 없으면 \`unknown\`으로 기록합니다.\n- 활성 업무에는 담당자, 다음 행동, 재검토일을 기록합니다.\n- 고객·계약·정산 등 민감 정보는 공개 저장소에 올리지 않습니다.\n- 한 사실에는 하나의 정본만 두고 다른 문서에서는 링크합니다.\n`;
 }
 
 // Claude Code auto-loads CLAUDE.md (not AGENTS.md), so ship a pointer file.
@@ -306,9 +412,12 @@ export function generateWorkspace(options) {
     name: plan.name,
     modules: plan.modules,
     generatedAt: date,
+    onboarding: "blocked",
     interviewProfile: plan.profile ?? null,
   };
   fs.writeFileSync(path.join(configDirectory, "config.json"), `${JSON.stringify(configuration, null, 2)}\n`, "utf8");
+  fs.writeFileSync(path.join(configDirectory, "onboarding-check.mjs"), onboardingCheckScript(), "utf8");
+  fs.writeFileSync(path.join(target, "onboarding.md"), onboardingMarkdown(plan, date), "utf8");
   fs.writeFileSync(path.join(target, "README.md"), readmeMarkdown(plan), "utf8");
   fs.writeFileSync(path.join(target, "AGENTS.md"), agentsMarkdown(plan), "utf8");
   fs.writeFileSync(path.join(target, "CLAUDE.md"), claudeMarkdown(plan), "utf8");

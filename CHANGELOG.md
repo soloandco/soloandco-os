@@ -6,6 +6,9 @@ All notable changes are documented here. This project follows Semantic Versionin
 
 ### Added
 
+- mandatory `onboarding.md` customer-and-offer definition generated in `blocked` state
+- `.soloandco/onboarding-check.mjs` gate that blocks downstream work until all required values are confirmed
+- generated `AGENTS.md` rules and module index notices that enforce the same onboarding gate in Codex and Claude
 - `community` module: a folder for running and recording participants, gatherings, and programs
 - `lecture` module: a folder for lecture and workshop planning, materials, and attendee feedback
 - `ops/marketing` directory in the management-agency preset: the company's own channels, kept separate from member-supporting `services/content`
@@ -16,6 +19,7 @@ All notable changes are documented here. This project follows Semantic Versionin
 
 ### Changed
 
+- generated README and Claude interview handoff now complete customer onboarding before the first homepage, content, marketing, sales, or brand task
 - interview profile `schemaVersion` moves to `0.2.0`; `0.1.0` profiles still load and generate unchanged
 - interview prompt now reads user-provided materials (website, intro documents) first, extracts answers with sources, and asks only unanswered questions
 - interview prompt guides the first real record within ten minutes after generation
@@ -33,4 +37,3 @@ All notable changes are documented here. This project follows Semantic Versionin
 - dry-run, broad-path refusal, and non-empty target protection
 - starter scorecard, decision log, and management member template
 - open-source governance and security documentation
-
