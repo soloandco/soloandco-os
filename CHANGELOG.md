@@ -6,6 +6,8 @@ All notable changes are documented here. This project follows Semantic Versionin
 
 ### Added
 
+- first-run question that offers the Notion template before generating folders, with `--start notion|folder` to answer it non-interactively
+- `docs/notion/template.md`: the Notion template as one importable file, four databases and three pages
 - mandatory `onboarding.md` customer-and-offer definition generated in `blocked` state
 - `.soloandco/onboarding-check.mjs` gate that blocks downstream work until all required values are confirmed
 - generated `AGENTS.md` rules and module index notices that enforce the same onboarding gate in Codex and Claude

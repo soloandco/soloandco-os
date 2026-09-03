@@ -229,3 +229,46 @@ test("generated workspace blocks downstream work until required onboarding is co
     fs.rmSync(temporaryRoot, { recursive: true, force: true });
   }
 });
+
+const cliPath = path.join(import.meta.dirname, "..", "bin", "create-soloandco-os.mjs");
+
+test("--start notion prints the Notion template guide and creates nothing", () => {
+  const target = fs.mkdtempSync(path.join(os.tmpdir(), "soloandco-notion-"));
+  fs.rmSync(target, { recursive: true, force: true });
+  const result = spawnSync(process.execPath, [cliPath, "--start", "notion"], { encoding: "utf8" });
+  assert.equal(result.status, 0);
+  assert.match(result.stdout, /docs\/notion\/template\.md/);
+  assert.match(result.stdout, /--start folder/);
+  assert.equal(fs.existsSync(target), false);
+});
+
+test("--start rejects unknown values", () => {
+  const result = spawnSync(process.execPath, [cliPath, "--start", "bogus"], { encoding: "utf8" });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Unknown --start value/);
+});
+
+test("a preset run is never interrupted by the Notion question", () => {
+  const target = fs.mkdtempSync(path.join(os.tmpdir(), "soloandco-folder-"));
+  fs.rmSync(target, { recursive: true, force: true });
+  const result = spawnSync(
+    process.execPath,
+    [cliPath, "--preset", "solo-founder", "--target", target, "--name", "Test"],
+    { encoding: "utf8" },
+  );
+  assert.equal(result.status, 0);
+  assert.doesNotMatch(result.stdout, /노션 템플릿을 먼저 만들까요/);
+  assert(fs.existsSync(path.join(target, "onboarding.md")));
+  fs.rmSync(target, { recursive: true, force: true });
+});
+
+test("the shipped Notion template carries every table and page", () => {
+  const template = fs.readFileSync(
+    path.join(import.meta.dirname, "..", "docs", "notion", "template.md"),
+    "utf8",
+  );
+  assert.equal((template.match(/^## 표 /gm) ?? []).length, 4);
+  assert.equal((template.match(/^## 페이지 /gm) ?? []).length, 3);
+  assert.match(template, /온보딩/);
+  assert.match(template, /오늘 기록/);
+});
