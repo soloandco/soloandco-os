@@ -268,7 +268,7 @@ test("the shipped Notion template carries every table and page", () => {
     "utf8",
   );
   assert.equal((template.match(/^## 표 /gm) ?? []).length, 4);
-  assert.equal((template.match(/^## 페이지 /gm) ?? []).length, 3);
+  assert.equal((template.match(/^## 페이지 /gm) ?? []).length, 4);
   assert.match(template, /온보딩/);
   assert.match(template, /오늘 기록/);
 });
