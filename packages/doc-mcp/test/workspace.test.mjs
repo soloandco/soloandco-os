@@ -86,3 +86,21 @@ test("splits two tables with no blank line between them", () => {
   assert.deepEqual(tables[1].headers, ["c", "d"]);
   assert.deepEqual(tables[1].rows, [{ c: "3", d: "4" }]);
 });
+
+test("does not split a table on a dash-only data row", () => {
+  const tables = parseTables(
+    "| 항목 | 값 |\n|---|---|\n| 담당 | 홍길동 |\n| - | - |\n| 이메일 | test@example.test |\n"
+  );
+  assert.equal(tables.length, 1);
+  assert.deepEqual(tables[0].headers, ["항목", "값"]);
+  assert.deepEqual(tables[0].rows, [
+    { 항목: "담당", 값: "홍길동" },
+    { 항목: "-", 값: "-" },
+    { 항목: "이메일", 값: "test@example.test" },
+  ]);
+});
+
+test("a short divider (|-|-|) is not recognized as a table", () => {
+  const tables = parseTables("| a | b |\n|-|-|\n| 1 | 2 |\n");
+  assert.equal(tables.length, 0);
+});

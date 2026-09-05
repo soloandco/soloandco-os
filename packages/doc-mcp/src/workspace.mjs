@@ -6,7 +6,14 @@ import { resolveInWorkspace } from "./config.mjs";
 const splitRow = (line) =>
   line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((cell) => cell.trim());
 
-const isDivider = (line) => /^\|?[\s:-]+\|[\s:|-]*$/.test(line.trim());
+// 구분선 판정은 칸마다 대시 3개 이상을 요구한다 (`|---|` 관례). 대시 1~2개짜리 칸은
+// `| - | - |` 같은 정상 데이터 행과 구분할 수 없어 구분선으로 보지 않는다.
+const isDivider = (line) => {
+  const trimmed = line.trim();
+  if (!trimmed.includes("|")) return false;
+  const cells = trimmed.replace(/^\|/, "").replace(/\|$/, "").split("|");
+  return cells.length > 0 && cells.every((cell) => /^\s*:?-{3,}:?\s*$/.test(cell));
+};
 
 // 마크다운 링크에서 경로만 뽑는다. 링크가 아니면 원문을 돌려준다.
 const unlink = (cell) => {
