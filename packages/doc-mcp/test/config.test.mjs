@@ -61,13 +61,20 @@ test("rejects an absolute path outside the workspace", () => {
   assert.throws(() => resolveInWorkspace(config, path.join(os.tmpdir(), "x.md")), /워크스페이스 밖/);
 });
 
-test("error messages carry no config values", () => {
-  const { configPath } = writeConfig();
+test("error messages carry no workspace paths", () => {
+  // resolveInWorkspace 는 config.json 의 사실 값(가격·이메일 등)에 애초에 접근할
+  // 수 없으니 그런 값이 메시지에 없다는 확인은 이 함수를 결코 실패시킬 수 없다.
+  // 이 함수가 실제로 다룰 수 있는 값은 워크스페이스 루트와 그로부터 계산한
+  // 대상 경로뿐이므로, 새는지 확인할 대상은 그 둘이다.
+  const { configPath, root } = writeConfig();
   const config = loadConfig(configPath);
+  const relative = "../outside.md";
+  const wouldBeTarget = path.resolve(root, relative);
   try {
-    resolveInWorkspace(config, "../outside.md");
+    resolveInWorkspace(config, relative);
     assert.fail("throw 되어야 한다");
   } catch (err) {
-    assert.ok(!err.message.includes("샘플컴퍼니"));
+    assert.ok(!err.message.includes(root));
+    assert.ok(!err.message.includes(wouldBeTarget));
   }
 });

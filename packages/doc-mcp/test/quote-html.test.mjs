@@ -37,7 +37,10 @@ test("escapes html in every text field", () => {
   assert.ok(html.includes("&lt;script&gt;"));
 });
 
-test("keeps a4 safe margins", () => {
+test("the @page rule declares the required a4 margins", () => {
+  // 실제 렌더 여백 실측(600dpi 래스터·픽셀 경계)은 이 테스트의 범위가 아니다.
+  // 여기서 확인하는 것은 CSS 선언 그 자체이며, 실측치는 docs/doc-mcp-design.md의
+  // "실사용 검증" 절이 별도로 기록한다.
   const html = renderQuoteHtml(base);
   assert.ok(/margin:\s*24mm\s+22mm/.test(html));
   assert.ok(html.includes("size: A4"));
