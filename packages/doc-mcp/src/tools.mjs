@@ -58,13 +58,22 @@ export async function dispatch(config, name, rawArgs) {
         return text(body || "등록된 정책 수치가 없다");
       }
       case "get_counterparty": {
-        const found = readCounterparty(config, String(args.slug ?? ""));
+        if (typeof args.slug !== "string" || args.slug.length === 0) {
+          return fail("slug 가 비어 있다");
+        }
+        const found = readCounterparty(config, args.slug);
         return text(`${found.name} / ${found.id} / 단계 ${found.stage} / 저장 폴더 ${found.dir}`);
       }
       case "create_quote": {
+        if (typeof args.counterparty !== "string" || args.counterparty.length === 0) {
+          return fail("counterparty 가 비어 있다");
+        }
+        if (!Array.isArray(args.items) || args.items.length === 0) {
+          return fail("items 는 최소 하나의 항목이 있는 배열이어야 한다");
+        }
         const result = createQuote(config, {
-          counterparty: String(args.counterparty ?? ""),
-          items: Array.isArray(args.items) ? args.items : [],
+          counterparty: args.counterparty,
+          items: args.items,
           valid_days: Number.isFinite(args.valid_days) ? args.valid_days : 30,
         });
         return text(`견적서 저장됨\n경로: ${result.path}\n합계: ${result.total.toLocaleString("en-US")}`);

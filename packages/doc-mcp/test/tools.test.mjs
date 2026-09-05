@@ -66,3 +66,25 @@ test("a failure returns an error result instead of throwing", async () => {
   assert.equal(result.isError, true);
   assert.match(result.content[0].text, /찾지 못했다/);
 });
+
+test("get_counterparty with no slug rejects with a named-argument error", async () => {
+  const result = await dispatch(makeConfig(), "get_counterparty", {});
+  assert.equal(result.isError, true);
+  assert.match(result.content[0].text, /slug/);
+});
+
+test("create_quote with no counterparty rejects with a named-argument error", async () => {
+  const result = await dispatch(makeConfig(), "create_quote", {
+    items: [{ label: "알파 모듈", amount: 1000000 }],
+  });
+  assert.equal(result.isError, true);
+  assert.match(result.content[0].text, /counterparty/);
+});
+
+test("create_quote with no items rejects with a named-argument error", async () => {
+  const result = await dispatch(makeConfig(), "create_quote", {
+    counterparty: "샘플상사",
+  });
+  assert.equal(result.isError, true);
+  assert.match(result.content[0].text, /items/);
+});
