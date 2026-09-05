@@ -68,10 +68,67 @@ test("rejects an amount that is not a positive number", () => {
   );
 });
 
-test("rejects a counterparty name that contains a path separator", () => {
+test("rejects an unknown counterparty name", () => {
+  // 이 테스트는 경로 안전성을 증명하지 않는다. readCounterparty는 정확한 이름
+  // 일치로만 행을 찾으므로, 어떤 미등록 이름을 넣어도 같은 이유로 거절된다.
+  // 경로 탈출 자체의 안전성은 아래 "탈출을 시도하는 today 값" 테스트가 맡는다.
   const config = makeConfig();
   assert.throws(
     () => createQuote(config, { counterparty: "../탈출", items, valid_days: 30, today: "2026-01-02" }),
-    /찾지 못했다|워크스페이스 밖/
+    /찾지 못했다/
   );
+});
+
+test("rejects a today value that tries to escape the workspace, and writes nothing outside it", () => {
+  const config = makeConfig();
+  const maliciousToday = "../../../../../../outside";
+
+  assert.throws(
+    () => createQuote(config, { counterparty: "샘플상사", items, valid_days: 30, today: maliciousToday }),
+    /today/
+  );
+
+  // 검증이 없었다면 실제로 만들어졌을 탈출 파일명이 워크스페이스 안에도 없어야 하고,
+  // 워크스페이스 바깥(부모 디렉터리)에도 새 항목이 생기지 않아야 한다.
+  const escapedFilename = `quote-샘플상사-${maliciousToday}.html`;
+  const naiveTargetInsideCounterpartyDir = path.join(config.workspace_root, "leads", "샘플상사", escapedFilename);
+  assert.ok(!fs.existsSync(naiveTargetInsideCounterpartyDir));
+
+  const parentOfWorkspace = path.dirname(config.workspace_root);
+  assert.ok(!fs.existsSync(path.join(parentOfWorkspace, "outside")));
+});
+
+test("defaults issued_on to the local calendar day, not the UTC day", () => {
+  // OS 타임존과 무관하게 결정적으로 만들기 위해 Date를 오버라이드한다: 기본 생성자
+  // (인자 없음, 즉 "지금")는 실제 UTC로는 2025-12-31인 시각을 가리키게 하되,
+  // getFullYear/getMonth/getDate(로컬 달력 값)는 2026-01-02를 돌려주게 한다.
+  // 구현이 isoDate(new Date())처럼 toISOString()(UTC)을 썼다면 "2025-12-31"이,
+  // localIsoDate처럼 로컬 getter를 썼다면 "2026-01-02"가 나온다.
+  const config = makeConfig();
+  const RealDate = globalThis.Date;
+
+  class FixedDate extends RealDate {
+    constructor(...args) {
+      super(...(args.length ? args : [RealDate.UTC(2025, 11, 31, 20, 0, 0)]));
+    }
+    getFullYear() {
+      return 2026;
+    }
+    getMonth() {
+      return 0;
+    }
+    getDate() {
+      return 2;
+    }
+  }
+
+  globalThis.Date = FixedDate;
+  try {
+    const result = createQuote(config, { counterparty: "샘플상사", items, valid_days: 30 });
+    const html = fs.readFileSync(result.path, "utf8");
+    assert.ok(html.includes("2026-01-02"));
+    assert.ok(!html.includes("2025-12-31"));
+  } finally {
+    globalThis.Date = RealDate;
+  }
 });
