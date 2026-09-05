@@ -75,3 +75,14 @@ test("throws when the configured table is absent", () => {
   fs.writeFileSync(path.join(config.workspace_root, "metrics.md"), "# 없음\n", "utf8");
   assert.throws(() => readPricing(config), /표를 찾지 못했다/);
 });
+
+test("splits two tables with no blank line between them", () => {
+  const tables = parseTables(
+    "| a | b |\n|---|---|\n| 1 | 2 |\n| c | d |\n|---|---|\n| 3 | 4 |\n"
+  );
+  assert.equal(tables.length, 2);
+  assert.deepEqual(tables[0].headers, ["a", "b"]);
+  assert.deepEqual(tables[0].rows, [{ a: "1", b: "2" }]);
+  assert.deepEqual(tables[1].headers, ["c", "d"]);
+  assert.deepEqual(tables[1].rows, [{ c: "3", d: "4" }]);
+});

@@ -22,7 +22,11 @@ export function parseTables(markdown) {
     const headers = splitRow(lines[i]);
     const rows = [];
     let cursor = i + 2;
-    while (cursor < lines.length && lines[cursor].includes("|")) {
+    while (
+      cursor < lines.length &&
+      lines[cursor].includes("|") &&
+      !(lines[cursor + 1] && isDivider(lines[cursor + 1]))
+    ) {
       const cells = splitRow(lines[cursor]);
       const row = {};
       headers.forEach((header, index) => {
@@ -32,7 +36,7 @@ export function parseTables(markdown) {
       cursor += 1;
     }
     tables.push({ headers, rows });
-    i = cursor;
+    i = cursor - 1;
   }
   return tables;
 }
