@@ -1119,7 +1119,7 @@ console.error("business-doc-mcp 시작됨");
 - [ ] **Step 5: 테스트가 통과하는지 확인한다**
 
 Run: `node --test packages/doc-mcp/test/`
-Expected: PASS 30건
+Expected: PASS 37건 (설정 7 + 워크스페이스 8 + 렌더 8 + 견적 7 + 도구 7)
 
 - [ ] **Step 6: 서버가 실제로 뜨는지 확인한다**
 
