@@ -6,7 +6,7 @@
   "license": "AGPL-3.0-only",
   "author": "soloandco",
   "bin": { "business-doc-mcp": "./src/server.mjs" },
-  "files": ["src/", "config.example.json", "README.md"],
+  "files": ["src/", "config.example.json", "README.md", "LICENSE"],
   "scripts": { "test": "node --test test/" },
   "engines": { "node": ">=20" },
   "dependencies": { "@modelcontextprotocol/sdk": "^1.26.0" }
