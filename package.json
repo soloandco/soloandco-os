@@ -21,6 +21,7 @@
     "example:agency": "node ./bin/create-soloandco-os.mjs --preset management-agency --target ./generated-agency",
     "example:profile": "node ./bin/create-soloandco-os.mjs --profile ./examples/interview-profile.json --target ./generated-profile"
   },
+  "workspaces": ["packages/*"],
   "engines": {
     "node": ">=20"
   },

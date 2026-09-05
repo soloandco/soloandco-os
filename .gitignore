@@ -8,5 +8,6 @@ desktop.ini
 .env*
 *.pem
 *.key
+packages/doc-mcp/config.json
 
 .superpowers/
