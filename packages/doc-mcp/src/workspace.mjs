@@ -48,10 +48,15 @@ export function parseTables(markdown) {
   return tables;
 }
 
-function readTable(config, section) {
+// optionalFieldKeys 에 든 키는 표 선택 조건(모든 헤더 존재)에서 제외한다.
+// 값이 있으면 쓰고 없으면 폴백하는 필드(예: counterparties.slug)가 이 표를
+// 계속 찾을 수 있게 하기 위함이다.
+function readTable(config, section, optionalFieldKeys = []) {
   const absolute = resolveInWorkspace(config, section.path);
   const markdown = fs.readFileSync(absolute, "utf8");
-  const wanted = Object.values(section.fields);
+  const wanted = Object.entries(section.fields)
+    .filter(([key]) => !optionalFieldKeys.includes(key))
+    .map(([, header]) => header);
   const table = parseTables(markdown).find((candidate) =>
     wanted.every((header) => candidate.headers.includes(header))
   );
@@ -89,15 +94,20 @@ export function readIssuer(config) {
 
 export function readCounterparty(config, slug) {
   const section = config.counterparties;
-  const table = readTable(config, section);
+  const table = readTable(config, section, ["slug"]);
   const row = table.rows.find((candidate) => candidate[section.fields.name] === slug);
   if (!row) {
     throw new Error(`상대를 찾지 못했다: ${slug}`);
   }
+  // slug 필드는 선택 사항이다. 설정에 없거나, 표에 그 열이 없거나, 셀이 비어 있으면
+  // 지금까지처럼 표시 이름을 폴더명으로 쓴다.
+  const slugColumn = section.fields.slug;
+  const slugValue = slugColumn ? (row[slugColumn] ?? "").trim() : "";
+  const dirName = slugValue || slug;
   return {
     id: row[section.fields.id],
     name: row[section.fields.name],
     stage: row[section.fields.stage],
-    dir: resolveInWorkspace(config, path.join(section.dir, slug)),
+    dir: resolveInWorkspace(config, path.join(section.dir, dirName)),
   };
 }

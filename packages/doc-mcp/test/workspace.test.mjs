@@ -70,6 +70,52 @@ test("throws for an unknown counterparty", () => {
   assert.throws(() => readCounterparty(makeConfig(), "없는곳"), /찾지 못했다/);
 });
 
+// slug 필드(선택) 관련 테스트. 표시 이름과 실제 폴더명이 다른 워크스페이스를 흉내낸다.
+
+function makeSlugConfig(pipelineMarkdown) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "doc-mcp-ws-slug-"));
+  fs.writeFileSync(path.join(root, "pipeline.md"), pipelineMarkdown, "utf8");
+  return {
+    workspace_root: root,
+    counterparties: {
+      path: "pipeline.md",
+      fields: { id: "lead_id", name: "대상", stage: "단계", slug: "폴더" },
+      dir: "leads",
+    },
+  };
+}
+
+test("uses the slug column value as the directory name when present", () => {
+  const config = makeSlugConfig(
+    "| lead_id | 대상 | 단계 | 폴더 |\n|---|---|---|---|\n| L-010 | 예시디자인 (Example Design) | proposal | example-design |\n"
+  );
+  const found = readCounterparty(config, "예시디자인 (Example Design)");
+  assert.ok(found.dir.endsWith(path.join("leads", "example-design")));
+});
+
+test("falls back to the display name when the table has no slug column", () => {
+  const config = makeSlugConfig(
+    "| lead_id | 대상 | 단계 |\n|---|---|---|\n| L-010 | 예시디자인 (Example Design) | proposal |\n"
+  );
+  const found = readCounterparty(config, "예시디자인 (Example Design)");
+  assert.ok(found.dir.endsWith(path.join("leads", "예시디자인 (Example Design)")));
+});
+
+test("falls back to the display name when the slug cell is empty", () => {
+  const config = makeSlugConfig(
+    "| lead_id | 대상 | 단계 | 폴더 |\n|---|---|---|---|\n| L-010 | 예시디자인 (Example Design) |  proposal | |\n"
+  );
+  const found = readCounterparty(config, "예시디자인 (Example Design)");
+  assert.ok(found.dir.endsWith(path.join("leads", "예시디자인 (Example Design)")));
+});
+
+test("rejects a slug value that would escape the workspace", () => {
+  const config = makeSlugConfig(
+    "| lead_id | 대상 | 단계 | 폴더 |\n|---|---|---|---|\n| L-010 | 탈출상사 | proposal | ../../outside |\n"
+  );
+  assert.throws(() => readCounterparty(config, "탈출상사"), /워크스페이스 밖/);
+});
+
 test("throws when the configured table is absent", () => {
   const config = makeConfig();
   fs.writeFileSync(path.join(config.workspace_root, "metrics.md"), "# 없음\n", "utf8");
