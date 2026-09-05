@@ -48,11 +48,15 @@ test("computes the valid until date", () => {
   assert.ok(fs.readFileSync(result.path, "utf8").includes("2026-02-01"));
 });
 
-test("creates the folder when it is missing", () => {
+test("refuses to write when the lead folder is missing, and creates nothing", () => {
   const config = makeConfig();
-  fs.rmSync(path.join(config.workspace_root, "leads", "샘플상사"), { recursive: true });
-  const result = createQuote(config, { counterparty: "샘플상사", items, valid_days: 30, today: "2026-01-02" });
-  assert.ok(fs.existsSync(result.path));
+  const leadDir = path.join(config.workspace_root, "leads", "샘플상사");
+  fs.rmSync(leadDir, { recursive: true });
+  assert.throws(
+    () => createQuote(config, { counterparty: "샘플상사", items, valid_days: 30, today: "2026-01-02" }),
+    /상대 폴더가 없다/
+  );
+  assert.ok(!fs.existsSync(leadDir));
 });
 
 test("rejects an empty item list", () => {
@@ -65,6 +69,44 @@ test("rejects an amount that is not a positive number", () => {
   assert.throws(
     () => createQuote(config, { counterparty: "샘플상사", items: [{ label: "x", amount: -1 }], valid_days: 30, today: "2026-01-02" }),
     /금액/
+  );
+});
+
+test("rejects a fractional amount", () => {
+  const config = makeConfig();
+  assert.throws(
+    () => createQuote(config, { counterparty: "샘플상사", items: [{ label: "x", amount: 0.5 }], valid_days: 30, today: "2026-01-02" }),
+    /정수/
+  );
+});
+
+test("rejects an amount above the ceiling", () => {
+  const config = makeConfig();
+  assert.throws(
+    () => createQuote(config, { counterparty: "샘플상사", items: [{ label: "x", amount: 1e15 + 1 }], valid_days: 30, today: "2026-01-02" }),
+    /금액/
+  );
+});
+
+test("accepts an amount at the ceiling", () => {
+  const config = makeConfig();
+  const result = createQuote(config, { counterparty: "샘플상사", items: [{ label: "x", amount: 1e15 }], valid_days: 30, today: "2026-01-02" });
+  assert.ok(fs.existsSync(result.path));
+});
+
+test("rejects a missing label", () => {
+  const config = makeConfig();
+  assert.throws(
+    () => createQuote(config, { counterparty: "샘플상사", items: [{ amount: 1000 }], valid_days: 30, today: "2026-01-02" }),
+    /label/
+  );
+});
+
+test("rejects an empty label", () => {
+  const config = makeConfig();
+  assert.throws(
+    () => createQuote(config, { counterparty: "샘플상사", items: [{ label: "", amount: 1000 }], valid_days: 30, today: "2026-01-02" }),
+    /label/
   );
 });
 
@@ -96,6 +138,26 @@ test("rejects a today value that tries to escape the workspace, and writes nothi
 
   const parentOfWorkspace = path.dirname(config.workspace_root);
   assert.ok(!fs.existsSync(path.join(parentOfWorkspace, "outside")));
+});
+
+test("rejects a pipeline row whose display name tries to escape the workspace, and writes nothing outside it", () => {
+  // today는 MCP 표면에서 도달할 수 없는 입력이다(tools.mjs가 선언·전달하지 않는다).
+  // 실제로 도달 가능한 경로 입력은 파이프라인 표의 상대 이름(counterparty)이다.
+  const config = makeConfig();
+  const maliciousName = "../../../../../../outside2";
+  fs.writeFileSync(
+    path.join(config.workspace_root, "pipeline.md"),
+    `# 파이프라인\n\n| lead_id | 대상 | 단계 |\n|---|---|---|\n| L-999 | ${maliciousName} | proposal |\n`,
+    "utf8"
+  );
+
+  assert.throws(
+    () => createQuote(config, { counterparty: maliciousName, items, valid_days: 30, today: "2026-01-02" }),
+    /워크스페이스 밖/
+  );
+
+  const parentOfWorkspace = path.dirname(config.workspace_root);
+  assert.ok(!fs.existsSync(path.join(parentOfWorkspace, "outside2")));
 });
 
 test("defaults issued_on to the local calendar day, not the UTC day", () => {

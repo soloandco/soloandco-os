@@ -14,6 +14,7 @@ function makeConfig() {
   for (const name of ["metrics.md", "contacts.md", "pipeline.md"]) {
     fs.copyFileSync(path.join(FIXTURES, name), path.join(root, name));
   }
+  fs.mkdirSync(path.join(root, "leads", "샘플상사"), { recursive: true });
   return {
     workspace_root: root,
     pricing: { path: "metrics.md", fields: { metric: "수치", key: "키", value: "값", source: "정본", verified_at: "확인일" } },
@@ -87,4 +88,49 @@ test("create_quote with no items rejects with a named-argument error", async () 
   });
   assert.equal(result.isError, true);
   assert.match(result.content[0].text, /items/);
+});
+
+test("create_quote rejects a negative valid_days as an error result, not a throw", async () => {
+  const result = await dispatch(makeConfig(), "create_quote", {
+    counterparty: "샘플상사",
+    items: [{ label: "알파 모듈", amount: 1000000 }],
+    valid_days: -1,
+  });
+  assert.equal(result.isError, true);
+  assert.match(result.content[0].text, /valid_days/);
+});
+
+test("create_quote rejects a valid_days beyond the ceiling", async () => {
+  const result = await dispatch(makeConfig(), "create_quote", {
+    counterparty: "샘플상사",
+    items: [{ label: "알파 모듈", amount: 1000000 }],
+    valid_days: 3651,
+  });
+  assert.equal(result.isError, true);
+  assert.match(result.content[0].text, /valid_days/);
+});
+
+test("create_quote rejects a fractional valid_days", async () => {
+  const result = await dispatch(makeConfig(), "create_quote", {
+    counterparty: "샘플상사",
+    items: [{ label: "알파 모듈", amount: 1000000 }],
+    valid_days: 1.5,
+  });
+  assert.equal(result.isError, true);
+  assert.match(result.content[0].text, /valid_days/);
+});
+
+test("create_quote accepts valid_days at 0 and at the ceiling", async () => {
+  const zero = await dispatch(makeConfig(), "create_quote", {
+    counterparty: "샘플상사",
+    items: [{ label: "알파 모듈", amount: 1000000 }],
+    valid_days: 0,
+  });
+  assert.equal(zero.isError, undefined);
+  const ceiling = await dispatch(makeConfig(), "create_quote", {
+    counterparty: "샘플상사",
+    items: [{ label: "알파 모듈", amount: 1000000 }],
+    valid_days: 3650,
+  });
+  assert.equal(ceiling.isError, undefined);
 });

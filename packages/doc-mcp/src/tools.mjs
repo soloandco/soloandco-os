@@ -71,10 +71,17 @@ export async function dispatch(config, name, rawArgs) {
         if (!Array.isArray(args.items) || args.items.length === 0) {
           return fail("items 는 최소 하나의 항목이 있는 배열이어야 한다");
         }
+        let validDays = 30;
+        if (args.valid_days !== undefined) {
+          if (!Number.isInteger(args.valid_days) || args.valid_days < 0 || args.valid_days > 3650) {
+            return fail("valid_days 는 0 이상 3650 이하의 정수여야 한다");
+          }
+          validDays = args.valid_days;
+        }
         const result = createQuote(config, {
           counterparty: args.counterparty,
           items: args.items,
-          valid_days: Number.isFinite(args.valid_days) ? args.valid_days : 30,
+          valid_days: validDays,
         });
         return text(`견적서 저장됨\n경로: ${result.path}\n합계: ${result.total.toLocaleString("en-US")}`);
       }
