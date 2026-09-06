@@ -1,0 +1,13 @@
+{
+  "name": "business-doc-mcp",
+  "version": "0.1.0",
+  "description": "Local MCP server that turns workspace facts into business documents",
+  "type": "module",
+  "license": "AGPL-3.0-only",
+  "author": "soloandco",
+  "bin": { "business-doc-mcp": "./src/server.mjs" },
+  "files": ["src/", "config.example.json", "README.md", "LICENSE"],
+  "scripts": { "test": "node --test test/" },
+  "engines": { "node": ">=20" },
+  "dependencies": { "@modelcontextprotocol/sdk": "^1.26.0" }
+}

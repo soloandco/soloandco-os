@@ -1119,7 +1119,7 @@ console.error("business-doc-mcp 시작됨");
 - [ ] **Step 5: 테스트가 통과하는지 확인한다**
 
 Run: `node --test packages/doc-mcp/test/`
-Expected: PASS 30건
+Expected: 전부 PASS. 개수는 여기 적지 않는다. 태스크 경계가 바뀌면서 실제 수가 이미 두 번 틀렸다
 
 - [ ] **Step 6: 서버가 실제로 뜨는지 확인한다**
 
