@@ -62,6 +62,8 @@
 
 Node.js 20 이상이 필요합니다. `--preset`을 주면 질문 없이 바로 생성합니다.
 
+> 터미널이 낯설면 Claude Code 같은 AI 코딩 도구에 이 README 주소를 주고 「이대로 설치해 줘」라고 하면 됩니다. Node.js 설치부터 워크스페이스 생성까지 대신 진행합니다.
+
 ```bash
 git clone https://github.com/soloandco/soloandco-os.git
 cd soloandco-os

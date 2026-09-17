@@ -245,6 +245,9 @@ test("--start notion prints the Notion template guide and creates nothing", () =
   assert.equal(result.status, 0);
   assert.match(result.stdout, /docs\/notion\/template\.md/);
   assert.match(result.stdout, /--start folder/);
+  // The template requires four onboarding fields, so the guide must not ask for all eleven.
+  assert.match(result.stdout, /필수 4칸/);
+  assert.doesNotMatch(result.stdout, /11칸/);
   assert.equal(fs.existsSync(target), false);
 });
 
