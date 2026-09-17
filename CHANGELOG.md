@@ -9,11 +9,10 @@ All notable changes are documented here. This project follows Semantic Versionin
 - first-run question that offers the Notion template before generating folders, with `--start notion|folder` to answer it non-interactively
 - `docs/notion/template.md`: the Notion template as one importable file, four databases and three pages
 - mandatory `onboarding.md` customer-and-offer definition generated in `blocked` state
-- `.soloandco/onboarding-check.mjs` gate that blocks downstream work until all required values are confirmed
-- generated `AGENTS.md` rules and module index notices that enforce the same onboarding gate in Codex and Claude
+- `.soloandco/onboarding-check.mjs` gate that blocks downstream work until the four required values are confirmed (primary customer, offer, excluded customer, strengths)
+- generated `AGENTS.md` rules and module index notices that enforce the onboarding gate for any agent that reads them
 - `community` module: a folder for running and recording participants, gatherings, and programs
 - `lecture` module: a folder for lecture and workshop planning, materials, and attendee feedback
-- `ops/marketing` directory in the management-agency preset: the company's own channels, kept separate from member-supporting `services/content`
 - `brand` module: generates `brand/brand-guidelines.md` for people and a matching agent skill for AI tools
 - interview profile field `brand` with colors, text-safe color variants, fonts, tone, and an avoid list
 - interview prompt extracts brand colors and fonts from user materials instead of asking for them
@@ -21,7 +20,8 @@ All notable changes are documented here. This project follows Semantic Versionin
 
 ### Changed
 
-- generated workspaces now treat matching Claude and Codex behavior as the default completion condition for every rule, structure, automation, and skill change
+- management-agency preset flattens to `members`, `services`, `sales`, `finance`, and `legal` so it no longer mirrors one organization's internal split
+- generated `AGENTS.md` no longer requires every change to be applied to two specific AI tools; it keeps rules in one file with `CLAUDE.md` as a pointer
 - generated README and Claude interview handoff now complete customer onboarding before the first homepage, content, marketing, sales, or brand task
 - interview profile `schemaVersion` moves to `0.2.0`; `0.1.0` profiles still load and generate unchanged
 - interview prompt now reads user-provided materials (website, intro documents) first, extracts answers with sources, and asks only unanswered questions

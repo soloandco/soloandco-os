@@ -37,16 +37,10 @@
       "directories": [
         { "path": "members", "title": "소속 멤버", "description": "멤버별 프로필·성장·고객·계약·정산" },
         { "path": "members/_templates", "title": "멤버 템플릿", "description": "신규 멤버 온보딩에 복사하는 템플릿" },
-        { "path": "services/management", "title": "멤버 매니지먼트", "description": "선발·계약·온보딩·성장·갱신" },
-        { "path": "services/branding", "title": "브랜딩 지원", "description": "멤버 포지셔닝과 브랜드 자산" },
-        { "path": "services/website", "title": "홈페이지 지원", "description": "멤버 홈페이지·전환·배포" },
-        { "path": "services/content", "title": "콘텐츠 지원", "description": "멤버 콘텐츠·채널·사례화" },
-        { "path": "services/sales", "title": "고객 영업 지원", "description": "멤버의 최종 고객 발굴·상담·제안" },
-        { "path": "ops/sales", "title": "신규 멤버 영업", "description": "계약 전 멤버 후보 파이프라인" },
-        { "path": "ops/finance", "title": "회사 재무", "description": "회사 자체 매출·현금·비용" },
-        { "path": "ops/legal", "title": "법무", "description": "표준 계약·개인정보·정책" },
-        { "path": "ops/marketing", "title": "회사 자체 채널", "description": "회사 본인 계정의 콘텐츠 기획·발행물·자료. 멤버를 지원하는 services/content와 구분한다" },
-        { "path": "ventures", "title": "자체 벤처", "description": "매니지먼트 외 회사 수익 실험" }
+        { "path": "services", "title": "멤버 지원 서비스", "description": "멤버에게 제공하는 지원 항목과 진행 절차" },
+        { "path": "sales", "title": "영업", "description": "신규 멤버 후보와 고객의 발굴·상담·제안" },
+        { "path": "finance", "title": "재무", "description": "회사 매출·비용과 멤버 정산" },
+        { "path": "legal", "title": "계약과 정책", "description": "표준 계약·개인정보·운영 정책" }
       ]
     },
     "solo-founder": {

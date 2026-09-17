@@ -20,7 +20,7 @@
 
 | 프리셋 | 대상 | 핵심 구조 |
 |---|---|---|
-| `management-agency` | 여러 1인 사업자를 육성하는 조직 | 멤버·매니지먼트·성장·계약·정산 |
+| `management-agency` | 여러 1인 사업자를 육성하는 조직 | 멤버·지원 서비스·영업·재무·계약 |
 | `solo-founder` | 자신의 상품·고객·콘텐츠를 운영하는 1인 창업자 | 사업·상품·고객·프로젝트·재무·실험 |
 | `freelancer` | 여러 고객 프로젝트를 수행하는 프리랜서 | 고객사·서비스·영업·프로젝트·청구 |
 
@@ -74,16 +74,14 @@ node ./bin/create-soloandco-os.mjs \
   --name "My Business"
 ```
 
-생성된 워크스페이스는 `onboarding.md`가 `blocked`인 상태로 시작합니다. 가장 먼저 데려올 고객, 판매 상품, 구매 트리거, 첫 질문, 반론, 결정 기준, 원하는 변화, 제외 고객, 증거를 운영자와 확인합니다. 값을 모두 채우고 `status: active`로 바꾼 뒤 검사합니다.
+생성된 워크스페이스는 `onboarding.md`가 `blocked`인 상태로 시작합니다. 필수는 네 가지입니다. 가장 먼저 데려올 고객, 판매 상품, 팔지 않는 고객, 실제로 결과를 낸 적 있는 일. 이 넷을 운영자와 확인해 채우고 `status: active`로 바꾼 뒤 검사합니다. 구매 계기·반론·증거 같은 나머지 항목은 비워 두고 시작해도 됩니다.
 
 ```bash
 cd ../my-business-os
 node .soloandco/onboarding-check.mjs
 ```
 
-`OK: onboarding complete`가 나온 뒤 홈페이지·콘텐츠·마케팅·영업 업무를 시작합니다. 생성된 `AGENTS.md`가 Codex를, `CLAUDE.md` 포인터가 Claude를 같은 규칙에 연결합니다.
-
-이후 규칙·구조·자동화·스킬을 바꿀 때도 별도 지시 없이 Claude와 Codex 양쪽 적용을 완료 조건으로 삼습니다. 공통 규칙은 `AGENTS.md` 한 곳에서 관리합니다.
+`OK: onboarding complete`가 나온 뒤 홈페이지·콘텐츠·마케팅·영업 업무를 시작합니다. 규칙은 생성된 `AGENTS.md` 한 곳에 있고, `CLAUDE.md`는 그 파일을 가리키는 포인터입니다. `AGENTS.md`를 읽는 다른 AI 도구도 같은 규칙을 따릅니다.
 
 생성 전에 구조만 확인할 수도 있습니다.
 

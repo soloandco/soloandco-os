@@ -120,12 +120,13 @@ owner: ""
 review_at: ""
 primary_customer: ""
 offer: ""
+excluded_customer: ""
+strengths: ""
 purchase_trigger: ""
 first_question: ""
 objection: ""
 decision_criteria: ""
 desired_change: ""
-excluded_customer: ""
 evidence: ""
 ---
 
@@ -133,26 +134,34 @@ evidence: ""
 
 이 문서가 \`active\`가 되기 전에는 홈페이지·콘텐츠·마케팅·영업 실행을 시작하지 않습니다. 폴더가 있다는 것과 사업 맥락이 입력됐다는 것은 다릅니다.
 
-## 운영자가 확인할 정보
+## 필수 네 가지
 
-프론트매터의 아래 값을 한 줄씩 채웁니다. 에이전트가 문서에서 추정하지 않고 운영자에게 확인받습니다.
+프론트매터의 아래 값을 채웁니다. 에이전트가 문서에서 추정하지 않고 운영자에게 확인받습니다.
 
 | 필드 | 답할 질문 |
 |---|---|
 | \`primary_customer\` | 가장 먼저 데려올 고객은 누구인가 |
 | \`offer\` | 그 고객에게 무엇을 파는가 |
+| \`excluded_customer\` | 누구에게는 팔지 않는가 |
+| \`strengths\` | 실제 결과를 낸 적 있는 일은 무엇인가. 둘까지만 적는다 |
+
+## 나중에 채워도 되는 것
+
+비워 두고 시작해도 됩니다. 고객을 만나면서 알게 되면 채웁니다.
+
+| 필드 | 답할 질문 |
+|---|---|
 | \`purchase_trigger\` | 어떤 사건이 생겼을 때 돈을 쓰는가 |
 | \`first_question\` | 처음 가장 먼저 묻는 질문은 무엇인가 |
 | \`objection\` | 구매 전에 가장 크게 망설이는 이유는 무엇인가 |
 | \`decision_criteria\` | 무엇을 확인하면 구매를 결정하는가 |
 | \`desired_change\` | 구매 뒤 어떤 상태가 되길 원하는가 |
-| \`excluded_customer\` | 누구에게는 팔지 않는가 |
-| \`evidence\` | 이를 증명할 사례·수치·산출물은 무엇인가. 없으면 \`없음\`이라고 확인한다 |
+| \`evidence\` | 이를 증명할 사례·수치·산출물은 무엇인가 |
 
 ## 완료 방법
 
-1. 위 값을 운영자에게 확인받아 프론트매터에 적습니다.
-2. 값이 모두 확인되면 \`status: active\`로 바꿉니다.
+1. 필수 네 가지를 운영자에게 확인받아 프론트매터에 적습니다.
+2. 네 가지가 확인되면 \`status: active\`로 바꿉니다.
 3. 루트에서 \`node .soloandco/onboarding-check.mjs\`를 실행합니다.
 4. \`OK: onboarding complete\`가 나온 뒤 다음 업무를 시작합니다.
 
@@ -174,13 +183,8 @@ const onboardingPath = path.join(workspaceRoot, "onboarding.md");
 const requiredFields = [
   "primary_customer",
   "offer",
-  "purchase_trigger",
-  "first_question",
-  "objection",
-  "decision_criteria",
-  "desired_change",
   "excluded_customer",
-  "evidence",
+  "strengths",
 ];
 
 if (!fs.existsSync(onboardingPath)) {
@@ -216,12 +220,11 @@ function readmeMarkdown(plan) {
 }
 
 function agentsMarkdown(plan) {
-  return `# ${plan.name}\n\n이 워크스페이스는 Solo & Co OS \`${plan.preset}\` 프리셋으로 생성되었습니다.\n\n> 이 파일이 Claude와 Codex가 함께 읽는 워크스페이스 규칙의 정본입니다. \`CLAUDE.md\`는 이 파일을 가리키는 포인터입니다.\n\n## 에이전트 공통 적용\n\n- 모든 규칙·구조·자동화·스킬 변경은 별도 지시 없이 Claude와 Codex에 동일하게 적용합니다.\n- 도구별 설정이나 경로가 필요하면 양쪽 진입 경로를 같은 작업에서 연결하고 검증합니다. 한쪽에서만 작동하면 완료로 보지 않습니다.\n- 공통 규칙은 이 파일에만 기록하고 \`CLAUDE.md\`에는 복사하지 않습니다.\n- 공유 스킬의 정본은 \`.claude/skills/\`입니다. Claude와 Codex 모두 관련 작업 전에 그 안의 해당 \`SKILL.md\`를 읽습니다.\n\n## 필수 온보딩 관문\n\n- 모든 세션은 루트의 \`onboarding.md\`를 먼저 읽고 \`node .soloandco/onboarding-check.mjs\`를 실행합니다.\n- 문서가 없거나 검사가 실패하면 다른 요청보다 온보딩을 먼저 안내합니다. 운영자에게 필수 값을 하나씩 확인받고 문서에 기록합니다.\n- 온보딩 완료 전 허용되는 작업은 온보딩 작성, 기존 자료 수집, 증거 위치 확인뿐입니다.\n- 온보딩 완료 전에는 홈페이지 카피·콘텐츠 원고·마케팅 캠페인·영업 제안·브랜드 메시지를 만들거나 확정하지 않습니다.\n- 값을 기존 문서에서 추정하지 않습니다. 운영자가 확인한 뒤 \`status: active\`로 바꾸고 검사 통과를 확인합니다.\n\n## 운영 규칙\n\n- 폴더 색인은 \`index.md\`를 사용합니다.\n- 프로젝트 폴더는 \`YYYY-MM-<slug>/\` 형식을 권장합니다.\n- 실제 수치가 없으면 \`unknown\`으로 기록합니다.\n- 활성 업무에는 담당자, 다음 행동, 재검토일을 기록합니다.\n- 고객·계약·정산 등 민감 정보는 공개 저장소에 올리지 않습니다.\n- 한 사실에는 하나의 정본만 두고 다른 문서에서는 링크합니다.\n`;
+  return `# ${plan.name}\n\n이 워크스페이스는 Solo & Co OS \`${plan.preset}\` 프리셋으로 생성되었습니다.\n\n> 이 파일이 AI 도구가 읽는 워크스페이스 규칙의 정본입니다. \`CLAUDE.md\`는 이 파일을 가리키는 포인터입니다.\n\n## 규칙과 스킬의 위치\n\n- 규칙은 이 파일에만 기록하고 \`CLAUDE.md\`에는 복사하지 않습니다.\n- 스킬의 정본은 \`.claude/skills/\`입니다. 관련 작업 전에 그 안의 해당 \`SKILL.md\`를 읽습니다.\n\n## 필수 온보딩 관문\n\n- 모든 세션은 루트의 \`onboarding.md\`를 먼저 읽고 \`node .soloandco/onboarding-check.mjs\`를 실행합니다.\n- 문서가 없거나 검사가 실패하면 다른 요청보다 온보딩을 먼저 안내합니다. 운영자에게 필수 값을 하나씩 확인받고 문서에 기록합니다.\n- 온보딩 완료 전 허용되는 작업은 온보딩 작성, 기존 자료 수집, 증거 위치 확인뿐입니다.\n- 온보딩 완료 전에는 홈페이지 카피·콘텐츠 원고·마케팅 캠페인·영업 제안·브랜드 메시지를 만들거나 확정하지 않습니다.\n- 값을 기존 문서에서 추정하지 않습니다. 운영자가 확인한 뒤 \`status: active\`로 바꾸고 검사 통과를 확인합니다.\n\n## 운영 규칙\n\n- 폴더 색인은 \`index.md\`를 사용합니다.\n- 프로젝트 폴더는 \`YYYY-MM-<slug>/\` 형식을 권장합니다.\n- 실제 수치가 없으면 \`unknown\`으로 기록합니다.\n- 활성 업무에는 담당자, 다음 행동, 재검토일을 기록합니다.\n- 고객·계약·정산 등 민감 정보는 공개 저장소에 올리지 않습니다.\n- 한 사실에는 하나의 정본만 두고 다른 문서에서는 링크합니다.\n`;
 }
 
 // Claude Code auto-loads CLAUDE.md (not AGENTS.md), so ship a pointer file.
-// Keeping the rules in ONE file avoids the two-copy drift this project's own
-// workspace hit before consolidating (2026-08-05).
+// Keeping the rules in ONE file avoids two copies drifting apart.
 function claudeMarkdown(plan) {
   return `# ${plan.name}\n\n**워크스페이스 규칙의 정본은 [AGENTS.md](AGENTS.md)입니다. 작업 시작 전 AGENTS.md를 읽으세요.**\n\n이 파일은 포인터입니다. 규칙 변경은 AGENTS.md에만 반영합니다. 같은 내용을 두 파일에 병기하면 반드시 한쪽만 갱신되어 갈라지기 때문입니다.\n`;
 }

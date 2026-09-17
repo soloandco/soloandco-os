@@ -203,18 +203,18 @@ export function resolveInWorkspace(config, relativePath) {
 {
   "workspace_root": "",
   "pricing": {
-    "path": "ops/key-metrics.md",
+    "path": "offers/pricing.md",
     "fields": { "metric": "수치", "key": "키", "value": "값", "source": "정본", "verified_at": "확인일" }
   },
   "contacts": {
-    "path": "ops/brand/positioning.md",
+    "path": "business/contacts.md",
     "fields": { "label": "항목", "value": "값" },
     "lookup": { "person": "담당", "email": "이메일" }
   },
   "counterparties": {
-    "path": "ops/sales/pipeline.md",
+    "path": "customers/pipeline.md",
     "fields": { "id": "lead_id", "name": "대상", "stage": "단계" },
-    "dir": "ops/sales/leads"
+    "dir": "customers/leads"
   },
   "issuer": { "display_name": "", "business_number": "" },
   "brand": { "accent": "", "ink": "", "font_family": "" },
