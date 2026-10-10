@@ -58,6 +58,8 @@
 
 5명 이하 팀이 클로드에게 시킨 일을 빠짐없이 기록하려면 [`docs/notion/team-template.md`](docs/notion/team-template.md)를 같은 방법으로 씁니다. 표 2개(업무 기록·고객사)와 지시문으로 되어 있습니다.
 
+두 양식 모두 일을 끝낼 때 「소요 시간」을 적습니다. 다음 견적의 근거를 쌓기 위한 칸입니다. Claude Code나 Codex로 한 일은 [`scripts/session-time.mjs`](scripts/session-time.mjs)가 세션 기록의 시각으로 재 줍니다(`node scripts/session-time.mjs --session <세션 id>`).
+
 두 방법 모두 온보딩을 먼저 통과해야 홈페이지·콘텐츠·마케팅·영업으로 넘어갑니다.
 
 ## 빠른 시작 (파일 워크스페이스)

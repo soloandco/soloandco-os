@@ -9,6 +9,8 @@ All notable changes are documented here. This project follows Semantic Versionin
 - first-run question that offers the Notion template before generating folders, with `--start notion|folder` to answer it non-interactively
 - `docs/notion/template.md`: the Notion template as one importable file, four databases and three pages
 - `docs/notion/team-template.md`: a Notion work-log template for teams of five or fewer, two databases and instructions that make Claude record every instructed task before doing it
+- `소요 시간` (hours spent) column in both Notion templates, filled when a row is marked done, so past work becomes the basis for the next quote
+- `scripts/session-time.mjs`: measures working time from Claude Code and Codex session logs, dropping gaps longer than five minutes and counting overlapping sessions once
 - mandatory `onboarding.md` customer-and-offer definition generated in `blocked` state
 - `.soloandco/onboarding-check.mjs` gate that blocks downstream work until the four required values are confirmed (primary customer, offer, excluded customer, strengths)
 - generated `AGENTS.md` rules and module index notices that enforce the onboarding gate for any agent that reads them
