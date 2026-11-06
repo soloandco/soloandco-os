@@ -14,9 +14,9 @@ npm install
 
 ## 설정
 
-`config.example.json`을 `config.json`으로 복사하고 `workspace_root`를 실제 워크스페이스 경로로 채운다.
+생성기로 만든 워크스페이스라면 설정 파일을 따로 만들지 않는다. 워크스페이스의 `.soloandco/doc-mcp.config.json`에 프리셋에 맞는 표 경로와 `workspace_root`가 이미 채워져 있으니 `DOC_MCP_CONFIG`에 그 파일을 지정한다. 가격·연락처·고객 표도 빈 양식으로 함께 생성된다.
 
-`config.example.json`의 `pricing.path`·`contacts.path`·`counterparties.path`·`counterparties.dir` 값은 예시일 뿐이다. 이 저장소의 생성기는 그 경로들을 만들지 않으므로, 실제로 그 표들이 있는 워크스페이스 파일 경로로 다시 지정해야 한다.
+직접 만든 워크스페이스라면 `config.example.json`을 `config.json`으로 복사하고, `workspace_root`와 표 경로(`pricing.path`·`contacts.path`·`counterparties.path`·`counterparties.dir`)를 실제 파일에 맞춰 바꾼다.
 
 `contacts.lookup` 맵의 키는 정확히 `person`과 `email`이어야 한다(견적서 템플릿이 이 두 키만 읽는다). 값(오른쪽)만 워크스페이스마다 다른 표 라벨이다.
 

@@ -82,7 +82,15 @@ export function buildPlan({ preset, name = "My Business OS", target = ".", modul
     profile,
     target: path.resolve(target),
     directories,
+    tables: tableLocations[preset],
+    tableFiles: [...tableFileList(tableLocations[preset]), ...(modules.includes("ir") ? irTableFiles : [])],
   };
+}
+
+// toISOString() is UTC, so a workspace generated before 09:00 in Korea would be stamped with yesterday.
+export function localDate(now = new Date()) {
+  const pad = (value) => String(value).padStart(2, "0");
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 }
 
 function assertSafeTarget(target) {
@@ -100,13 +108,11 @@ function frontmatter({ type, title, description, date, extra = "" }) {
   return `---\ntype: ${type}\ntitle: ${JSON.stringify(title)}\ndescription: ${JSON.stringify(description)}\ntimestamp: ${date}${extra}\n---\n`;
 }
 
-const gatedPathPattern = /(^|\/)(branding|content|marketing|sales|website)(\/|$)/;
+// ir is outward-facing like sales, so investor material waits for the onboarding gate too.
+const gatedPathPattern = /(^|\/)(branding|content|ir|marketing|sales|website)(\/|$)/;
 
-function indexMarkdown(entry, date) {
-  const gate = gatedPathPattern.test(entry.path)
-    ? `\n> **온보딩 관문**: 루트의 \`onboarding.md\`가 \`status: active\`가 아니면 이 폴더의 실행 업무를 시작하지 않습니다. 루트에서 \`node .soloandco/onboarding-check.mjs\`로 확인합니다.\n`
-    : "";
-  return `${frontmatter({ type: "Index", title: entry.title, description: entry.description, date })}\n# ${entry.title}\n\n${entry.description}\n${gate}`;
+function isGated(entry) {
+  return gatedPathPattern.test(entry.path);
 }
 
 function onboardingMarkdown(plan, date) {
@@ -215,12 +221,47 @@ process.stdout.write("OK: onboarding complete\\n");
 }
 
 function readmeMarkdown(plan) {
-  const rows = plan.directories.map((entry) => `| \`${entry.path}/\` | ${entry.description} |`).join("\n");
-  return `# ${plan.name}\n\nSolo & Co OS의 \`${plan.preset}\` 프리셋으로 생성된 파일 기반 Business OS입니다.\n\n## 구조\n\n| 폴더 | 역할 |\n|---|---|\n${rows}\n\n## 첫 10분\n\n1. 다른 업무보다 먼저 루트의 [필수 온보딩](onboarding.md)을 운영자와 작성합니다.\n2. \`status: active\`로 바꾼 뒤 \`node .soloandco/onboarding-check.mjs\`를 실행합니다.\n3. 검사를 통과한 뒤 현재 진행 중인 고객·멤버·프로젝트 하나를 기록합니다.\n4. 모든 활성 문서에 담당자·다음 행동·재검토일을 둡니다.\n5. 실제 숫자가 없으면 0으로 추정하지 않고 \`unknown\`으로 기록합니다.\n6. 비밀번호·복구 코드·불필요한 개인정보는 저장하지 않습니다.\n\n온보딩을 통과하기 전에는 홈페이지·콘텐츠·마케팅·영업 실행을 시작하지 않습니다. 생성 설정은 \`.soloandco/config.json\`에 있습니다.\n`;
+  const rows = plan.directories
+    .map((entry) => `| \`${entry.path}/\` | ${entry.description} | ${isGated(entry) ? "온보딩 후" : ""} |`)
+    .join("\n");
+  const tables = plan.tableFiles.map((entry) => `| \`${entry.path}\` | ${entry.role} |`).join("\n");
+  return `# ${plan.name}
+
+Solo & Co OS의 \`${plan.preset}\` 프리셋으로 생성된 파일 기반 Business OS입니다.
+
+## 구조
+
+폴더 지도는 이 표 한 곳입니다. 폴더 안 파일이 10개를 넘으면 그때 그 폴더에 \`index.md\`를 만듭니다.
+
+「온보딩 후」 표시가 있는 폴더는 \`onboarding.md\`가 \`status: active\`가 되기 전에는 실행 업무를 시작하지 않습니다.
+
+| 폴더 | 역할 | 시작 조건 |
+|---|---|---|
+${rows}
+
+## 고정 표
+
+같은 형태로 반복되는 기록은 요약 문서가 아니라 아래 표에 한 줄씩 쌓습니다. 견적서 도구(\`packages/doc-mcp\`)는 가격·연락처·고객 표를 그대로 읽고, 설정은 \`.soloandco/doc-mcp.config.json\`에 미리 채워져 있습니다.
+
+| 파일 | 담는 것 |
+|---|---|
+${tables}
+
+## 첫 10분
+
+1. 다른 업무보다 먼저 루트의 [필수 온보딩](onboarding.md)을 운영자와 작성합니다.
+2. \`status: active\`로 바꾼 뒤 \`node .soloandco/onboarding-check.mjs\`를 실행합니다.
+3. 검사를 통과한 뒤 현재 진행 중인 고객·멤버·프로젝트 하나를 기록합니다.
+4. 모든 활성 문서에 담당자·다음 행동·재검토일을 둡니다.
+5. 실제 숫자가 없으면 0으로 추정하지 않고 \`unknown\`으로 기록합니다.
+6. 비밀번호·복구 코드·불필요한 개인정보는 저장하지 않습니다.
+
+온보딩을 통과하기 전에는 홈페이지·콘텐츠·마케팅·영업 실행을 시작하지 않습니다. 생성 설정은 \`.soloandco/config.json\`에 있습니다.
+`;
 }
 
 function agentsMarkdown(plan) {
-  return `# ${plan.name}\n\n이 워크스페이스는 Solo & Co OS \`${plan.preset}\` 프리셋으로 생성되었습니다.\n\n> 이 파일이 AI 도구가 읽는 워크스페이스 규칙의 정본입니다. \`CLAUDE.md\`는 이 파일을 가리키는 포인터입니다.\n\n## 규칙과 스킬의 위치\n\n- 규칙은 이 파일에만 기록하고 \`CLAUDE.md\`에는 복사하지 않습니다.\n- 스킬의 정본은 \`.claude/skills/\`입니다. 관련 작업 전에 그 안의 해당 \`SKILL.md\`를 읽습니다.\n\n## 필수 온보딩 관문\n\n- 모든 세션은 루트의 \`onboarding.md\`를 먼저 읽고 \`node .soloandco/onboarding-check.mjs\`를 실행합니다.\n- 문서가 없거나 검사가 실패하면 다른 요청보다 온보딩을 먼저 안내합니다. 운영자에게 필수 값을 하나씩 확인받고 문서에 기록합니다.\n- 온보딩 완료 전 허용되는 작업은 온보딩 작성, 기존 자료 수집, 증거 위치 확인뿐입니다.\n- 온보딩 완료 전에는 홈페이지 카피·콘텐츠 원고·마케팅 캠페인·영업 제안·브랜드 메시지를 만들거나 확정하지 않습니다.\n- 값을 기존 문서에서 추정하지 않습니다. 운영자가 확인한 뒤 \`status: active\`로 바꾸고 검사 통과를 확인합니다.\n\n## 운영 규칙\n\n- 폴더 색인은 \`index.md\`를 사용합니다.\n- 프로젝트 폴더는 \`YYYY-MM-<slug>/\` 형식을 권장합니다.\n- 실제 수치가 없으면 \`unknown\`으로 기록합니다.\n- 활성 업무에는 담당자, 다음 행동, 재검토일을 기록합니다.\n- 고객·계약·정산 등 민감 정보는 공개 저장소에 올리지 않습니다.\n- 한 사실에는 하나의 정본만 두고 다른 문서에서는 링크합니다.\n`;
+  return `# ${plan.name}\n\n이 워크스페이스는 Solo & Co OS \`${plan.preset}\` 프리셋으로 생성되었습니다.\n\n> 이 파일이 AI 도구가 읽는 워크스페이스 규칙의 정본입니다. \`CLAUDE.md\`는 이 파일을 가리키는 포인터입니다.\n\n## 규칙과 스킬의 위치\n\n- 규칙은 이 파일에만 기록하고 \`CLAUDE.md\`에는 복사하지 않습니다.\n- 스킬의 정본은 \`.claude/skills/\`입니다. 관련 작업 전에 그 안의 해당 \`SKILL.md\`를 읽습니다.\n\n## 필수 온보딩 관문\n\n- 모든 세션은 루트의 \`onboarding.md\`를 먼저 읽고 \`node .soloandco/onboarding-check.mjs\`를 실행합니다.\n- 문서가 없거나 검사가 실패하면 다른 요청보다 온보딩을 먼저 안내합니다. 운영자에게 필수 값을 하나씩 확인받고 문서에 기록합니다.\n- 온보딩 완료 전 허용되는 작업은 온보딩 작성, 기존 자료 수집, 증거 위치 확인뿐입니다.\n- 온보딩 완료 전에는 홈페이지 카피·콘텐츠 원고·마케팅 캠페인·영업 제안·브랜드 메시지를 만들거나 확정하지 않습니다.\n- 값을 기존 문서에서 추정하지 않습니다. 운영자가 확인한 뒤 \`status: active\`로 바꾸고 검사 통과를 확인합니다.\n\n## 운영 규칙\n\n- 폴더 지도는 루트 \`README.md\` 한 곳에 둡니다. 폴더 안 파일이 10개를 넘을 때만 그 폴더에 \`index.md\`를 만듭니다.\n- 가격·연락처·고객·수치처럼 반복되는 기록은 README 「고정 표」의 파일에 한 줄씩 추가합니다. 같은 내용을 요약 문서로 따로 만들지 않습니다.\n- 프로젝트 폴더는 \`YYYY-MM-<slug>/\` 형식을 권장합니다.\n- 실제 수치가 없으면 \`unknown\`으로 기록합니다.\n- 활성 업무에는 담당자, 다음 행동, 재검토일을 기록합니다.\n- 고객·계약·정산 등 민감 정보는 공개 저장소에 올리지 않습니다.\n- 한 사실에는 하나의 정본만 두고 다른 문서에서는 링크합니다.\n`;
 }
 
 // Claude Code auto-loads CLAUDE.md (not AGENTS.md), so ship a pointer file.
@@ -394,18 +435,245 @@ function writeStarterFiles(target, plan, date) {
   if (plan.modules.includes("brand")) writeBrandFiles(target, plan, date);
 }
 
+// Where each preset keeps the record tables that packages/doc-mcp reads.
+const tableLocations = {
+  "solo-founder": {
+    pricing: "offers/pricing.md",
+    contacts: "business/contacts.md",
+    pipeline: "customers/pipeline.md",
+    counterpartyDir: "customers",
+  },
+  freelancer: {
+    pricing: "services/pricing.md",
+    contacts: "ops/contacts.md",
+    pipeline: "sales/pipeline.md",
+    counterpartyDir: "clients",
+  },
+  "management-agency": {
+    pricing: "services/pricing.md",
+    contacts: "ops/contacts.md",
+    pipeline: "sales/pipeline.md",
+    counterpartyDir: "sales",
+  },
+};
+
+function tableFileList(tables) {
+  return [
+    { path: tables.pricing, role: "상품별 가격" },
+    { path: tables.contacts, role: "견적서에 찍힐 담당자·이메일" },
+    { path: tables.pipeline, role: `고객 한 명당 한 줄. 견적서는 「폴더」 칸의 \`${tables.counterpartyDir}/<폴더>/\`에 저장됩니다` },
+  ];
+}
+
+function pricingMarkdown(date) {
+  return `${frontmatter({ type: "Table", title: "가격표", description: "상품별 가격. 견적서 도구가 읽는다", date })}
+# 가격표
+
+상품 하나에 한 줄. 「키」는 견적서를 만들 때 부르는 짧은 이름이다. 가격이 정해지지 않았으면 줄을 만들지 않는다.
+
+| 수치 | 키 | 값 | 정본 | 확인일 |
+|---|---|---|---|---|
+`;
+}
+
+function contactsMarkdown(date) {
+  return `${frontmatter({ type: "Table", title: "대외 연락처", description: "견적서·제안서에 찍히는 담당자와 이메일", date })}
+# 대외 연락처
+
+견적서 도구는 「담당」과 「이메일」 두 줄을 읽는다. 비어 있으면 견적서를 만들지 않고 멈춘다.
+
+| 항목 | 값 |
+|---|---|
+| 담당 |  |
+| 이메일 |  |
+`;
+}
+
+function pipelineMarkdown(date, counterpartyDir) {
+  return `${frontmatter({ type: "Table", title: "고객 목록", description: "고객 한 명당 한 줄. 단계와 저장 폴더", date })}
+# 고객 목록
+
+고객 한 명당 한 줄. 「폴더」는 \`${counterpartyDir}/\` 아래 그 고객 자료를 두는 폴더 이름이다. 비우면 「대상」 이름을 그대로 쓴다.
+
+단계: \`captured\`(알게 됨) · \`meeting\`(상담) · \`proposal\`(제안) · \`won\`(계약) · \`lost\`(무산)
+
+| lead_id | 대상 | 단계 | 폴더 | 담당 | 다음 행동 | 재검토일 |
+|---|---|---|---|---|---|---|
+`;
+}
+
+function docMcpConfig(target, plan) {
+  const tables = plan.tables;
+  const brand = brandData(plan);
+  const accent = brand.colors[0]?.textHex ?? brand.colors[0]?.hex ?? "";
+  return {
+    workspace_root: target.split(path.sep).join("/"),
+    pricing: {
+      path: tables.pricing,
+      fields: { metric: "수치", key: "키", value: "값", source: "정본", verified_at: "확인일" },
+    },
+    contacts: {
+      path: tables.contacts,
+      fields: { label: "항목", value: "값" },
+      lookup: { person: "담당", email: "이메일" },
+    },
+    counterparties: {
+      path: tables.pipeline,
+      fields: { id: "lead_id", name: "대상", stage: "단계", slug: "폴더" },
+      dir: tables.counterpartyDir,
+    },
+    issuer: { display_name: plan.name, business_number: "" },
+    brand: { accent, ink: "", font_family: brand.fonts.body ?? "" },
+    output: { filename: "quote-{name}-{date}.html" },
+  };
+}
+
+// IR material is assembled from four record files, not written from scratch each time.
+// Order follows the usual investor read: numbers → market → strategy and team → the ask.
+function irMetricsMarkdown(date) {
+  return `${frontmatter({ type: "Table", title: "IR 수치", description: "IR 자료에 들어가는 숫자의 정본. 값마다 기준일과 출처", date })}
+# IR 수치
+
+IR 자료의 숫자는 전부 이 표에서 가져온다. 자료에 직접 숫자를 적지 않는다. 모르는 값은 \`unknown\`으로 두고 0으로 채우지 않는다.
+
+같은 지표가 바뀌면 줄을 고치지 않고 새 기준일로 한 줄을 더한다. 추이가 그대로 남는다.
+
+| 지표 | 값 | 단위 | 기준일 | 출처 | 비고 |
+|---|---|---|---|---|---|
+| 월 매출 | unknown | 원 |  |  |  |
+| 누적 매출 | unknown | 원 |  |  |  |
+| 유료 고객 수 | unknown | 명 |  |  |  |
+| 재구매율 | unknown | % |  |  |  |
+| 고객 1명 확보 비용 | unknown | 원 |  |  |  |
+| 월 고정비 | unknown | 원 |  |  |  |
+| 보유 현금 | unknown | 원 |  |  |  |
+`;
+}
+
+function irMarketMarkdown(date) {
+  return `${frontmatter({ type: "Table", title: "시장과 경쟁", description: "시장 규모 추정과 경쟁사 비교", date })}
+# 시장과 경쟁
+
+## 시장 규모
+
+계산식을 함께 적는다. 숫자만 있으면 투자자가 믿지 않는다.
+
+| 구분 | 정의 | 규모 | 계산식 | 출처 | 기준일 |
+|---|---|---|---|---|---|
+| 전체 시장 |  | unknown |  |  |  |
+| 들어갈 수 있는 시장 |  | unknown |  |  |  |
+| 3년 안에 가져올 시장 |  | unknown |  |  |  |
+
+## 경쟁사
+
+경쟁사 한 곳에 한 줄. 「우리가 다른 점」은 고객이 체감하는 차이로 적는다.
+
+| 경쟁사 | 고객 | 가격 | 강점 | 약점 | 우리가 다른 점 | 확인일 |
+|---|---|---|---|---|---|---|
+`;
+}
+
+function irStoryMarkdown(date) {
+  return `${frontmatter({ type: "Table", title: "사업 이야기", description: "문제·해결·전략·팀을 한 줄씩. IR 자료 앞부분의 재료", date })}
+# 사업 이야기
+
+항목마다 한두 문장. 길게 쓴 근거는 다른 문서에 두고 「근거」 칸에 링크한다. \`onboarding.md\`에 있는 고객·상품 정의와 어긋나면 온보딩 쪽이 맞다.
+
+| 항목 | 내용 | 근거 |
+|---|---|---|
+| 고객이 겪는 문제 |  |  |
+| 우리의 해결 방법 |  |  |
+| 왜 지금인가 |  |  |
+| 포지셔닝 (누구에게 무엇으로 기억되나) |  |  |
+| 따라 하기 어려운 이유 |  |  |
+| 돈 버는 구조 |  |  |
+| 가격 |  |  |
+| 성장 경로 (다음에 넓힐 고객·상품) |  |  |
+| 위험과 대응 |  |  |
+
+## 팀
+
+| 이름 | 역할 | 이 일을 해낼 수 있는 근거 | 합류 시점 |
+|---|---|---|---|
+`;
+}
+
+function irFundingMarkdown(date) {
+  return `${frontmatter({ type: "Table", title: "자금 계획", description: "필요 금액·용도·마일스톤·조달 이력", date })}
+# 자금 계획
+
+## 이번에 필요한 돈
+
+| 항목 | 값 |
+|---|---|
+| 필요 금액 | unknown |
+| 조달 방식 (투자·지원사업·융자) |  |
+| 이 돈으로 버티는 기간 | unknown |
+
+## 용도
+
+| 용도 | 금액 | 비중 | 이 돈으로 달성할 것 |
+|---|---|---|---|
+
+## 마일스톤
+
+IR에서 약속하는 목표. 지표는 \`ir/metrics.md\`의 지표 이름을 그대로 쓴다.
+
+| 시점 | 지표 | 목표값 | 상태 |
+|---|---|---|---|
+
+## 조달 이력
+
+| 날짜 | 방식 | 상대 | 금액 | 조건 |
+|---|---|---|---|---|
+`;
+}
+
+function writeIrFiles(target, date) {
+  const irDirectory = path.join(target, "ir");
+  fs.writeFileSync(path.join(irDirectory, "metrics.md"), irMetricsMarkdown(date), "utf8");
+  fs.writeFileSync(path.join(irDirectory, "market.md"), irMarketMarkdown(date), "utf8");
+  fs.writeFileSync(path.join(irDirectory, "story.md"), irStoryMarkdown(date), "utf8");
+  fs.writeFileSync(path.join(irDirectory, "funding.md"), irFundingMarkdown(date), "utf8");
+}
+
+const irTableFiles = [
+  { path: "ir/metrics.md", role: "IR 숫자의 정본. 지표마다 기준일·출처" },
+  { path: "ir/market.md", role: "시장 규모 계산과 경쟁사 비교" },
+  { path: "ir/story.md", role: "문제·해결·전략·팀을 한 줄씩" },
+  { path: "ir/funding.md", role: "필요 금액·용도·마일스톤·조달 이력" },
+];
+
+function writeTableFiles(target, plan, date) {
+  const tables = plan.tables;
+  const write = (relativePath, content) => {
+    const absolute = path.join(target, relativePath);
+    fs.mkdirSync(path.dirname(absolute), { recursive: true });
+    fs.writeFileSync(absolute, content, "utf8");
+  };
+  write(tables.pricing, pricingMarkdown(date));
+  write(tables.contacts, contactsMarkdown(date));
+  write(tables.pipeline, pipelineMarkdown(date, tables.counterpartyDir));
+  if (plan.modules.includes("ir")) writeIrFiles(target, date);
+  write(".soloandco/doc-mcp.config.json", `${JSON.stringify(docMcpConfig(target, plan), null, 2)}\n`);
+}
+
 export function generateWorkspace(options) {
   const plan = buildPlan(options);
   const target = assertSafeTarget(plan.target);
-  const date = new Date().toISOString().slice(0, 10);
+  const date = localDate();
 
   fs.mkdirSync(target, { recursive: true });
   for (const entry of plan.directories) {
-    const directory = path.join(target, entry.path);
-    fs.mkdirSync(directory, { recursive: true });
-    fs.writeFileSync(path.join(directory, "index.md"), indexMarkdown(entry, date), "utf8");
+    fs.mkdirSync(path.join(target, entry.path), { recursive: true });
   }
   writeStarterFiles(target, plan, date);
+  writeTableFiles(target, plan, date);
+  // Git drops empty folders; a .gitkeep keeps the structure when the workspace is committed.
+  for (const entry of plan.directories) {
+    const directory = path.join(target, entry.path);
+    if (fs.readdirSync(directory).length === 0) fs.writeFileSync(path.join(directory, ".gitkeep"), "", "utf8");
+  }
 
   const configDirectory = path.join(target, ".soloandco");
   fs.mkdirSync(configDirectory, { recursive: true });

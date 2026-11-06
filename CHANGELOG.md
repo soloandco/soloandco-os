@@ -20,8 +20,14 @@ All notable changes are documented here. This project follows Semantic Versionin
 - interview profile field `brand` with colors, text-safe color variants, fonts, tone, and an avoid list
 - interview prompt extracts brand colors and fonts from user materials instead of asking for them
 - generated brand skill disables itself and asks the user when no brand values were captured
+- record tables generated empty in every workspace (pricing, contacts, customer pipeline) plus `.soloandco/doc-mcp.config.json` pointing at them, so the quote tool works without hand-written paths
+- `ir` module: `ir/metrics.md`, `ir/market.md`, `ir/story.md`, `ir/funding.md` as the single source for investor and grant material, with `ir/decks/` for produced versions; gated by onboarding like sales
 
 ### Changed
+
+- the generated README holds the only folder map; per-folder `index.md` stubs are no longer generated (empty folders get a `.gitkeep`)
+- `ventures` module now uses `experiments/` instead of creating a second experiment folder next to it
+- generated dates use the local calendar day instead of UTC, which stamped workspaces made before 09:00 KST with yesterday's date
 
 - management-agency preset flattens to `members`, `services`, `sales`, `finance`, and `legal` so it no longer mirrors one organization's internal split
 - generated `AGENTS.md` no longer requires every change to be applied to two specific AI tools; it keeps rules in one file with `CLAUDE.md` as a pointer

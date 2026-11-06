@@ -20,11 +20,15 @@
     "content": [
       { "path": "content", "title": "콘텐츠", "description": "채널별 콘텐츠·아이디어·성과" }
     ],
+    "ir": [
+      { "path": "ir", "title": "IR", "description": "투자·지원사업 자료의 재료. 수치·시장·사업 이야기·자금 계획" },
+      { "path": "ir/decks", "title": "IR 자료", "description": "만든 IR 자료의 버전별 보관" }
+    ],
     "lecture": [
       { "path": "lecture", "title": "강의", "description": "강의·워크숍 기획·자료·수강 피드백" }
     ],
     "ventures": [
-      { "path": "ventures", "title": "벤처와 실험", "description": "새 수익 모델·제품·시장 실험" }
+      { "path": "experiments", "title": "실험", "description": "가설·행동·수치·학습. 새 수익 모델·제품·시장 실험 포함" }
     ],
     "website": [
       { "path": "website", "title": "홈페이지", "description": "사이트 콘텐츠·전환·분석·배포" }
@@ -53,7 +57,7 @@
         { "path": "projects", "title": "프로젝트", "description": "기한과 결과가 있는 실행 단위" },
         { "path": "content", "title": "콘텐츠", "description": "채널별 발행물·아이디어·성과" },
         { "path": "finance", "title": "재무", "description": "청구·수금·비용·월 마감" },
-        { "path": "experiments", "title": "실험", "description": "가설·행동·수치·학습" },
+        { "path": "experiments", "title": "실험", "description": "가설·행동·수치·학습. 새 수익 모델·제품·시장 실험 포함" },
         { "path": "assets", "title": "자산", "description": "로고·사진·원본·공개 자산" }
       ]
     },
