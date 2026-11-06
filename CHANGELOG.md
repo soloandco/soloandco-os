@@ -16,18 +16,19 @@ All notable changes are documented here. This project follows Semantic Versionin
 - generated `AGENTS.md` rules and module index notices that enforce the onboarding gate for any agent that reads them
 - `community` module: a folder for running and recording participants, gatherings, and programs
 - `lecture` module: a folder for lecture and workshop planning, materials, and attendee feedback
-- `brand` module: generates `brand/brand-guidelines.md` for people and a matching agent skill for AI tools
+- `brand` module: generates `기업자료/브랜드/브랜드_규격.md` for people and a matching agent skill for AI tools
 - interview profile field `brand` with colors, text-safe color variants, fonts, tone, and an avoid list
 - interview prompt extracts brand colors and fonts from user materials instead of asking for them
 - generated brand skill disables itself and asks the user when no brand values were captured
 - record tables generated empty in every workspace (pricing, contacts, customer pipeline) plus `.soloandco/doc-mcp.config.json` pointing at them, so the quote tool works without hand-written paths
-- `ir` module: `ir/metrics.md`, `ir/market.md`, `ir/story.md`, `ir/funding.md` as the single source for investor and grant material, with `ir/decks/` for produced versions; gated by onboarding like sales
-- install-time Notion choice for file workspaces (`--notion yes|no`, interactive question, or `notion` in the interview profile). Yes adds `ops/notion-work-log.md`, a copy of `session-time.mjs`, and `AGENTS.md` rules that log every instructed task in Notion before work starts; no tells agents to stay off Notion. The choice is stored in `.soloandco/config.json`
+- `ir` module: reserves `IR/` (one folder per round with `작업/`, `최종/`, `자료/`) for IR tools that read company facts from `기업자료/`; gated by onboarding like sales
+- `기업자료/핵심지표.md` in every workspace: dated metric rows with source, the single place documents take numbers from
+- install-time Notion choice for file workspaces (`--notion yes|no`, interactive question, or `notion` in the interview profile). Yes adds `영역/운영/노션_업무기록표.md`, a copy of `session-time.mjs`, and `AGENTS.md` rules that log every instructed task in Notion before work starts; no tells agents to stay off Notion. The choice is stored in `.soloandco/config.json`
 
 ### Changed
 
 - the generated README holds the only folder map; per-folder `index.md` stubs are no longer generated (empty folders get a `.gitkeep`)
-- `ventures` module now uses `experiments/` instead of creating a second experiment folder next to it
+- **breaking**: folders follow PARA with Korean names: `프로젝트/`, `영역/`, `기업자료/`, `보관/` (plus `IR/`). Presets differ only under `영역/`. Record tables move to `기업자료/` (가격·연락처·핵심지표·결정기록) and `영역/고객/고객목록.md` for every preset. `knowledge/_inbox` becomes `기업자료/제공자료/`, the scorecard is replaced by `핵심지표.md`, and `ventures` adds no folder (experiments are projects)
 - generated dates use the local calendar day instead of UTC, which stamped workspaces made before 09:00 KST with yesterday's date
 
 - management-agency preset flattens to `members`, `services`, `sales`, `finance`, and `legal` so it no longer mirrors one organization's internal split

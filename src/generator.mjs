@@ -70,7 +70,7 @@ export function buildPlan({ preset, name = "My Business OS", target = ".", modul
     if (seen.has(entry.path)) return false;
     seen.add(entry.path);
     return true;
-  });
+  }).sort(byParaOrder);
 
   return {
     schemaVersion: manifest.schemaVersion,
@@ -84,8 +84,18 @@ export function buildPlan({ preset, name = "My Business OS", target = ".", modul
     target: path.resolve(target),
     directories,
     tables: tableLocations[preset],
-    tableFiles: [...tableFileList(tableLocations[preset]), ...(modules.includes("ir") ? irTableFiles : [])],
+    tableFiles: tableFileList(tableLocations[preset]),
   };
+}
+
+// PARA order: projects (IR is a project kind) → areas → resources → archive.
+const paraRank = ["프로젝트", "IR", "영역", "기업자료", "보관"];
+function byParaOrder(a, b) {
+  const rank = (entry) => {
+    const index = paraRank.indexOf(entry.path.split("/")[0]);
+    return index < 0 ? paraRank.length : index;
+  };
+  return rank(a) - rank(b) || a.path.localeCompare(b.path, "ko");
 }
 
 // toISOString() is UTC, so a workspace generated before 09:00 in Korea would be stamped with yesterday.
@@ -109,8 +119,8 @@ function frontmatter({ type, title, description, date, extra = "" }) {
   return `---\ntype: ${type}\ntitle: ${JSON.stringify(title)}\ndescription: ${JSON.stringify(description)}\ntimestamp: ${date}${extra}\n---\n`;
 }
 
-// ir is outward-facing like sales, so investor material waits for the onboarding gate too.
-const gatedPathPattern = /(^|\/)(branding|content|ir|marketing|sales|website)(\/|$)/;
+// IR is outward-facing like sales, so investor material waits for the onboarding gate too.
+const gatedPathPattern = /(^|\/)(콘텐츠|IR|마케팅|영업|홈페이지)(\/|$)/;
 
 function isGated(entry) {
   return gatedPathPattern.test(entry.path);
@@ -232,7 +242,16 @@ Solo & Co OS의 \`${plan.preset}\` 프리셋으로 생성된 파일 기반 Busin
 
 ## 구조
 
-폴더 지도는 이 표 한 곳입니다. 폴더 안 파일이 10개를 넘으면 그때 그 폴더에 \`index.md\`를 만듭니다.
+폴더는 목적에 따라 네 가지로만 나눕니다(PARA 방식).
+
+| 종류 | 폴더 | 무엇을 두나 |
+|---|---|---|
+| 프로젝트 | \`프로젝트/\`${plan.modules.includes("ir") ? " · \`IR/\`" : ""} | 끝나는 날이 있는 일 |
+| 영역 | \`영역/\` | 끝나지 않고 계속 맡는 일 |
+| 자료 | \`기업자료/\` | 회사 사실의 정본과 받은 자료 |
+| 보관 | \`보관/\` | 끝난 것. 지우지 않고 통째로 옮긴다 |
+
+어디에 둘지 모르겠으면 \`기업자료/제공자료/\`에 넣습니다. 폴더 지도는 아래 표 한 곳입니다. 폴더 안 파일이 10개를 넘으면 그때 그 폴더에 \`index.md\`를 만듭니다.
 
 「온보딩 후」 표시가 있는 폴더는 \`onboarding.md\`가 \`status: active\`가 되기 전에는 실행 업무를 시작하지 않습니다.
 
@@ -262,17 +281,13 @@ ${plan.notion ? notionReadmeSection() : ""}## 첫 10분
 }
 
 function agentsMarkdown(plan) {
-  return `# ${plan.name}\n\n이 워크스페이스는 Solo & Co OS \`${plan.preset}\` 프리셋으로 생성되었습니다.\n\n> 이 파일이 AI 도구가 읽는 워크스페이스 규칙의 정본입니다. \`CLAUDE.md\`는 이 파일을 가리키는 포인터입니다.\n\n## 규칙과 스킬의 위치\n\n- 규칙은 이 파일에만 기록하고 \`CLAUDE.md\`에는 복사하지 않습니다.\n- 스킬의 정본은 \`.claude/skills/\`입니다. 관련 작업 전에 그 안의 해당 \`SKILL.md\`를 읽습니다.\n\n## 필수 온보딩 관문\n\n- 모든 세션은 루트의 \`onboarding.md\`를 먼저 읽고 \`node .soloandco/onboarding-check.mjs\`를 실행합니다.\n- 문서가 없거나 검사가 실패하면 다른 요청보다 온보딩을 먼저 안내합니다. 운영자에게 필수 값을 하나씩 확인받고 문서에 기록합니다.\n- 온보딩 완료 전 허용되는 작업은 온보딩 작성, 기존 자료 수집, 증거 위치 확인뿐입니다.\n- 온보딩 완료 전에는 홈페이지 카피·콘텐츠 원고·마케팅 캠페인·영업 제안·브랜드 메시지를 만들거나 확정하지 않습니다.\n- 값을 기존 문서에서 추정하지 않습니다. 운영자가 확인한 뒤 \`status: active\`로 바꾸고 검사 통과를 확인합니다.\n\n## 운영 규칙\n\n- 폴더 지도는 루트 \`README.md\` 한 곳에 둡니다. 폴더 안 파일이 10개를 넘을 때만 그 폴더에 \`index.md\`를 만듭니다.\n- 가격·연락처·고객·수치처럼 반복되는 기록은 README 「고정 표」의 파일에 한 줄씩 추가합니다. 같은 내용을 요약 문서로 따로 만들지 않습니다.\n- 프로젝트 폴더는 \`YYYY-MM-<slug>/\` 형식을 권장합니다.\n- 실제 수치가 없으면 \`unknown\`으로 기록합니다.\n- 활성 업무에는 담당자, 다음 행동, 재검토일을 기록합니다.\n- 고객·계약·정산 등 민감 정보는 공개 저장소에 올리지 않습니다.\n- 한 사실에는 하나의 정본만 두고 다른 문서에서는 링크합니다.\n\n${plan.notion ? notionAgentsSection() : notionOffAgentsSection()}`;
+  return `# ${plan.name}\n\n이 워크스페이스는 Solo & Co OS \`${plan.preset}\` 프리셋으로 생성되었습니다.\n\n> 이 파일이 AI 도구가 읽는 워크스페이스 규칙의 정본입니다. \`CLAUDE.md\`는 이 파일을 가리키는 포인터입니다.\n\n## 규칙과 스킬의 위치\n\n- 규칙은 이 파일에만 기록하고 \`CLAUDE.md\`에는 복사하지 않습니다.\n- 스킬의 정본은 \`.claude/skills/\`입니다. 관련 작업 전에 그 안의 해당 \`SKILL.md\`를 읽습니다.\n\n## 필수 온보딩 관문\n\n- 모든 세션은 루트의 \`onboarding.md\`를 먼저 읽고 \`node .soloandco/onboarding-check.mjs\`를 실행합니다.\n- 문서가 없거나 검사가 실패하면 다른 요청보다 온보딩을 먼저 안내합니다. 운영자에게 필수 값을 하나씩 확인받고 문서에 기록합니다.\n- 온보딩 완료 전 허용되는 작업은 온보딩 작성, 기존 자료 수집, 증거 위치 확인뿐입니다.\n- 온보딩 완료 전에는 홈페이지 카피·콘텐츠 원고·마케팅 캠페인·영업 제안·브랜드 메시지를 만들거나 확정하지 않습니다.\n- 값을 기존 문서에서 추정하지 않습니다. 운영자가 확인한 뒤 \`status: active\`로 바꾸고 검사 통과를 확인합니다.\n\n## 운영 규칙\n\n- 폴더 지도는 루트 \`README.md\` 한 곳에 둡니다. 폴더 안 파일이 10개를 넘을 때만 그 폴더에 \`index.md\`를 만듭니다.\n- 가격·연락처·고객·수치처럼 반복되는 기록은 README 「고정 표」의 파일에 한 줄씩 추가합니다. 같은 내용을 요약 문서로 따로 만들지 않습니다.\n- 파일은 목적으로 둡니다. 끝나는 날이 있는 일은 \`프로젝트/YYYY-MM-이름/\`, 계속 맡는 일은 \`영역/\`, 회사 사실(숫자·가격·연락처·결정·보고서)은 \`기업자료/\`에 둡니다.\n- 새로 받은 자료와 둘 곳을 모르는 파일은 \`기업자료/제공자료/\`에 넣습니다. 이름·형식은 바꾸지 않아도 됩니다.\n- 프로젝트가 끝나면 폴더째 \`보관/\`으로 옮깁니다. 지우지 않습니다.\n- 숫자(매출·고객 수·현금 등)는 \`기업자료/핵심지표.md\`에 기준일·출처와 함께 한 줄씩 더합니다. 다른 문서는 이 표를 인용합니다.\n${irAgentsLine(plan)}- 실제 수치가 없으면 \`unknown\`으로 기록합니다.\n- 활성 업무에는 담당자, 다음 행동, 재검토일을 기록합니다.\n- 고객·계약·정산 등 민감 정보는 공개 저장소에 올리지 않습니다.\n- 한 사실에는 하나의 정본만 두고 다른 문서에서는 링크합니다.\n\n${plan.notion ? notionAgentsSection() : notionOffAgentsSection()}`;
 }
 
 // Claude Code auto-loads CLAUDE.md (not AGENTS.md), so ship a pointer file.
 // Keeping the rules in ONE file avoids two copies drifting apart.
 function claudeMarkdown(plan) {
   return `# ${plan.name}\n\n**워크스페이스 규칙의 정본은 [AGENTS.md](AGENTS.md)입니다. 작업 시작 전 AGENTS.md를 읽으세요.**\n\n이 파일은 포인터입니다. 규칙 변경은 AGENTS.md에만 반영합니다. 같은 내용을 두 파일에 병기하면 반드시 한쪽만 갱신되어 갈라지기 때문입니다.\n`;
-}
-
-function scorecardMarkdown(date) {
-  return `${frontmatter({ type: "Note", title: "주간 운영 점수판", description: "영업·실행·재무·학습의 현재 상태와 다음 행동", date })}\n# 주간 운영 점수판\n\n| 영역 | 신호 | 현재 상태 | 다음 행동 | 재검토일 |\n|---|---|---|---|---|\n| 영업 | unknown | 기준선 미입력 | 실제 파이프라인 확인 |  |\n| 실행 | unknown | 기준선 미입력 | 가장 중요한 결과 하나 선택 |  |\n| 재무 | unknown | 기준선 미입력 | 실제 수금·비용 확인 |  |\n| 학습 | unknown | 기준선 미입력 | 다음 실험 하나 선택 |  |\n`;
 }
 
 function decisionsMarkdown(date) {
@@ -375,7 +390,7 @@ function brandSkillMarkdown(plan) {
   const brand = brandData(plan);
   const slug = workspaceSlug(plan.name);
   const description = `${plan.name}의 브랜드 색·서체 규격. ${plan.name} 이름으로 나가는 소개서·제안서·슬라이드·웹페이지·도식·썸네일을 만들거나 고칠 때 사용한다. 트리거 - 브랜드 색, 우리 색, 로고 색, 소개서, 제안서, 슬라이드.`;
-  const header = `---\nname: ${slug}-brand\ndescription: ${description}\n---\n\n# ${plan.name} 브랜드 규격\n\n색·서체 값의 정본은 이 파일이다. \`brand/brand-guidelines.md\`는 처음 값을 채울 때 쓰는 안내판이며, 값 변경은 여기서만 한다.\n`;
+  const header = `---\nname: ${slug}-brand\ndescription: ${description}\n---\n\n# ${plan.name} 브랜드 규격\n\n색·서체 값의 정본은 이 파일이다. \`기업자료/브랜드/브랜드_규격.md\`는 처음 값을 채울 때 쓰는 안내판이며, 값 변경은 여기서만 한다.\n`;
 
   if (!brand.colors.length) {
     return `${header}
@@ -383,7 +398,7 @@ function brandSkillMarkdown(plan) {
 
 이 워크스페이스의 브랜드 값은 **아직 채워지지 않았다.**
 
-\`brand/brand-guidelines.md\`를 먼저 채우고 그 값을 이 파일로 옮긴다. 옮긴 뒤에는 이 파일이 정본이다. 그 전에는 이 스킬을 적용하지 말고, 색이나 서체가 필요한 산출물을 만들 때 사용자에게 직접 묻는다. 임의로 색을 골라 쓰지 않는다.
+\`기업자료/브랜드/브랜드_규격.md\`를 먼저 채우고 그 값을 이 파일로 옮긴다. 옮긴 뒤에는 이 파일이 정본이다. 그 전에는 이 스킬을 적용하지 말고, 색이나 서체가 필요한 산출물을 만들 때 사용자에게 직접 묻는다. 임의로 색을 골라 쓰지 않는다.
 `;
   }
 
@@ -417,18 +432,17 @@ ${brandCss(brand)}
 }
 
 function writeBrandFiles(target, plan, date) {
-  fs.writeFileSync(path.join(target, "brand", "brand-guidelines.md"), brandGuidelinesMarkdown(plan, date), "utf8");
+  fs.writeFileSync(path.join(target, "기업자료", "브랜드", "브랜드_규격.md"), brandGuidelinesMarkdown(plan, date), "utf8");
   const skillDirectory = path.join(target, ".claude", "skills", `${workspaceSlug(plan.name)}-brand`);
   fs.mkdirSync(skillDirectory, { recursive: true });
   fs.writeFileSync(path.join(skillDirectory, "SKILL.md"), brandSkillMarkdown(plan), "utf8");
 }
 
 function writeStarterFiles(target, plan, date) {
-  fs.writeFileSync(path.join(target, "ops", "scorecard.md"), scorecardMarkdown(date), "utf8");
-  fs.writeFileSync(path.join(target, "memory", "decisions.md"), decisionsMarkdown(date), "utf8");
+  fs.writeFileSync(path.join(target, "기업자료", "결정기록.md"), decisionsMarkdown(date), "utf8");
   if (plan.preset === "management-agency") {
     fs.writeFileSync(
-      path.join(target, "members", "_templates", "member-overview.md"),
+      path.join(target, "영역", "멤버", "_양식", "멤버_프로필.md"),
       memberOverviewTemplate(date),
       "utf8",
     );
@@ -436,26 +450,19 @@ function writeStarterFiles(target, plan, date) {
   if (plan.modules.includes("brand")) writeBrandFiles(target, plan, date);
 }
 
-// Where each preset keeps the record tables that packages/doc-mcp reads.
+// Every preset keeps the record tables in the same place: company facts in 기업자료/, customers in 영역/고객/.
+const recordTables = {
+  pricing: "기업자료/가격.md",
+  contacts: "기업자료/연락처.md",
+  metrics: "기업자료/핵심지표.md",
+  decisions: "기업자료/결정기록.md",
+  pipeline: "영역/고객/고객목록.md",
+  counterpartyDir: "영역/고객",
+};
 const tableLocations = {
-  "solo-founder": {
-    pricing: "offers/pricing.md",
-    contacts: "business/contacts.md",
-    pipeline: "customers/pipeline.md",
-    counterpartyDir: "customers",
-  },
-  freelancer: {
-    pricing: "services/pricing.md",
-    contacts: "ops/contacts.md",
-    pipeline: "sales/pipeline.md",
-    counterpartyDir: "clients",
-  },
-  "management-agency": {
-    pricing: "services/pricing.md",
-    contacts: "ops/contacts.md",
-    pipeline: "sales/pipeline.md",
-    counterpartyDir: "sales",
-  },
+  "solo-founder": recordTables,
+  freelancer: recordTables,
+  "management-agency": recordTables,
 };
 
 function tableFileList(tables) {
@@ -463,6 +470,8 @@ function tableFileList(tables) {
     { path: tables.pricing, role: "상품별 가격" },
     { path: tables.contacts, role: "견적서에 찍힐 담당자·이메일" },
     { path: tables.pipeline, role: `고객 한 명당 한 줄. 견적서는 「폴더」 칸의 \`${tables.counterpartyDir}/<폴더>/\`에 저장됩니다` },
+    { path: tables.metrics, role: "매출·고객 수·현금 같은 숫자. 기준일·출처와 함께, 바뀌면 새 줄" },
+    { path: tables.decisions, role: "결정과 이유. 최신이 위로" },
   ];
 }
 
@@ -529,21 +538,20 @@ function docMcpConfig(target, plan) {
   };
 }
 
-// IR material is assembled from four record files, not written from scratch each time.
-// Order follows the usual investor read: numbers → market → strategy and team → the ask.
-function irMetricsMarkdown(date) {
-  return `${frontmatter({ type: "Table", title: "IR 수치", description: "IR 자료에 들어가는 숫자의 정본. 값마다 기준일과 출처", date })}
-# IR 수치
+// Numbers every outward document quotes (IR, grant applications, reports). One row per value and date.
+function metricsMarkdown(date) {
+  return `${frontmatter({ type: "Table", title: "핵심지표", description: "회사 숫자의 정본. 값마다 기준일과 출처", date })}
+# 핵심지표
 
-IR 자료의 숫자는 전부 이 표에서 가져온다. 자료에 직접 숫자를 적지 않는다. 모르는 값은 \`unknown\`으로 두고 0으로 채우지 않는다.
+IR·지원사업·보고서에 들어가는 숫자는 전부 이 표에서 가져온다. 문서에 숫자를 따로 적지 않는다. 모르는 값은 \`unknown\`으로 두고 0으로 채우지 않는다.
 
-같은 지표가 바뀌면 줄을 고치지 않고 새 기준일로 한 줄을 더한다. 추이가 그대로 남는다.
+같은 지표가 바뀌면 줄을 고치지 않고 새 기준일로 한 줄을 더한다. 추이가 그대로 남는다. 실적이 아닌 값(계획·추정)은 비고에 \`계획\`·\`추정\`으로 적는다.
 
 | 지표 | 값 | 단위 | 기준일 | 출처 | 비고 |
 |---|---|---|---|---|---|
 | 월 매출 | unknown | 원 |  |  |  |
 | 누적 매출 | unknown | 원 |  |  |  |
-| 유료 고객 수 | unknown | 명 |  |  |  |
+| 유료 고객 수 | unknown | 곳 |  |  |  |
 | 재구매율 | unknown | % |  |  |  |
 | 고객 1명 확보 비용 | unknown | 원 |  |  |  |
 | 월 고정비 | unknown | 원 |  |  |  |
@@ -551,99 +559,11 @@ IR 자료의 숫자는 전부 이 표에서 가져온다. 자료에 직접 숫�
 `;
 }
 
-function irMarketMarkdown(date) {
-  return `${frontmatter({ type: "Table", title: "시장과 경쟁", description: "시장 규모 추정과 경쟁사 비교", date })}
-# 시장과 경쟁
-
-## 시장 규모
-
-계산식을 함께 적는다. 숫자만 있으면 투자자가 믿지 않는다.
-
-| 구분 | 정의 | 규모 | 계산식 | 출처 | 기준일 |
-|---|---|---|---|---|---|
-| 전체 시장 |  | unknown |  |  |  |
-| 들어갈 수 있는 시장 |  | unknown |  |  |  |
-| 3년 안에 가져올 시장 |  | unknown |  |  |  |
-
-## 경쟁사
-
-경쟁사 한 곳에 한 줄. 「우리가 다른 점」은 고객이 체감하는 차이로 적는다.
-
-| 경쟁사 | 고객 | 가격 | 강점 | 약점 | 우리가 다른 점 | 확인일 |
-|---|---|---|---|---|---|---|
-`;
+// IR/<라운드>/ is written by the IR tool itself (작업/·최종/·자료/), so the generator only reserves the folder.
+function irAgentsLine(plan) {
+  if (!plan.modules.includes("ir")) return "";
+  return "- IR 자료는 라운드마다 \`IR/<라운드>/\` 폴더 하나에 만듭니다. 팩트시트·원고 같은 작업 파일은 \`작업/\`, 투자자에게 보낼 파일은 \`최종/\`, 회사가 확인해 준 서류는 \`자료/\`에 둡니다. 숫자는 \`기업자료/핵심지표.md\`, 회사 사실은 \`기업자료/\`에서 가져옵니다.\n";
 }
-
-function irStoryMarkdown(date) {
-  return `${frontmatter({ type: "Table", title: "사업 이야기", description: "문제·해결·전략·팀을 한 줄씩. IR 자료 앞부분의 재료", date })}
-# 사업 이야기
-
-항목마다 한두 문장. 길게 쓴 근거는 다른 문서에 두고 「근거」 칸에 링크한다. \`onboarding.md\`에 있는 고객·상품 정의와 어긋나면 온보딩 쪽이 맞다.
-
-| 항목 | 내용 | 근거 |
-|---|---|---|
-| 고객이 겪는 문제 |  |  |
-| 우리의 해결 방법 |  |  |
-| 왜 지금인가 |  |  |
-| 포지셔닝 (누구에게 무엇으로 기억되나) |  |  |
-| 따라 하기 어려운 이유 |  |  |
-| 돈 버는 구조 |  |  |
-| 가격 |  |  |
-| 성장 경로 (다음에 넓힐 고객·상품) |  |  |
-| 위험과 대응 |  |  |
-
-## 팀
-
-| 이름 | 역할 | 이 일을 해낼 수 있는 근거 | 합류 시점 |
-|---|---|---|---|
-`;
-}
-
-function irFundingMarkdown(date) {
-  return `${frontmatter({ type: "Table", title: "자금 계획", description: "필요 금액·용도·마일스톤·조달 이력", date })}
-# 자금 계획
-
-## 이번에 필요한 돈
-
-| 항목 | 값 |
-|---|---|
-| 필요 금액 | unknown |
-| 조달 방식 (투자·지원사업·융자) |  |
-| 이 돈으로 버티는 기간 | unknown |
-
-## 용도
-
-| 용도 | 금액 | 비중 | 이 돈으로 달성할 것 |
-|---|---|---|---|
-
-## 마일스톤
-
-IR에서 약속하는 목표. 지표는 \`ir/metrics.md\`의 지표 이름을 그대로 쓴다.
-
-| 시점 | 지표 | 목표값 | 상태 |
-|---|---|---|---|
-
-## 조달 이력
-
-| 날짜 | 방식 | 상대 | 금액 | 조건 |
-|---|---|---|---|---|
-`;
-}
-
-function writeIrFiles(target, date) {
-  const irDirectory = path.join(target, "ir");
-  fs.writeFileSync(path.join(irDirectory, "metrics.md"), irMetricsMarkdown(date), "utf8");
-  fs.writeFileSync(path.join(irDirectory, "market.md"), irMarketMarkdown(date), "utf8");
-  fs.writeFileSync(path.join(irDirectory, "story.md"), irStoryMarkdown(date), "utf8");
-  fs.writeFileSync(path.join(irDirectory, "funding.md"), irFundingMarkdown(date), "utf8");
-}
-
-const irTableFiles = [
-  { path: "ir/metrics.md", role: "IR 숫자의 정본. 지표마다 기준일·출처" },
-  { path: "ir/market.md", role: "시장 규모 계산과 경쟁사 비교" },
-  { path: "ir/story.md", role: "문제·해결·전략·팀을 한 줄씩" },
-  { path: "ir/funding.md", role: "필요 금액·용도·마일스톤·조달 이력" },
-];
 
 function writeTableFiles(target, plan, date) {
   const tables = plan.tables;
@@ -655,7 +575,7 @@ function writeTableFiles(target, plan, date) {
   write(tables.pricing, pricingMarkdown(date));
   write(tables.contacts, contactsMarkdown(date));
   write(tables.pipeline, pipelineMarkdown(date, tables.counterpartyDir));
-  if (plan.modules.includes("ir")) writeIrFiles(target, date);
+  write(tables.metrics, metricsMarkdown(date));
   write(".soloandco/doc-mcp.config.json", `${JSON.stringify(docMcpConfig(target, plan), null, 2)}\n`);
 }
 
@@ -664,7 +584,7 @@ function writeTableFiles(target, plan, date) {
 // task board: every instructed task gets a row before work starts. With Notion off, agents are told
 // not to write to Notion even when their tool happens to have it connected.
 
-const notionWorkLogPath = "ops/notion-work-log.md";
+const notionWorkLogPath = "영역/운영/노션_업무기록표.md";
 const sessionTimeSource = path.join(sourceDirectory, "..", "scripts", "session-time.mjs");
 
 function notionReadmeSection() {

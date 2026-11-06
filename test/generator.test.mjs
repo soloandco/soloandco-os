@@ -10,12 +10,11 @@ import { buildPlan, generateWorkspace, loadProfile, localDate } from "../src/gen
 test("management preset contains member management structure", () => {
   const plan = buildPlan({ preset: "management-agency", target: "generated-test" });
   const paths = new Set(plan.directories.map((entry) => entry.path));
-  assert(paths.has("members"));
-  assert(paths.has("services"));
-  assert(paths.has("sales"));
-  assert(paths.has("finance"));
-  assert(!paths.has("ops/marketing"));
-  assert(!paths.has("services/management"));
+  assert(paths.has("영역/멤버"));
+  assert(paths.has("영역/서비스"));
+  assert(paths.has("영역/영업"));
+  assert(paths.has("영역/재무"));
+  assert(!paths.has("영역/마케팅"));
 });
 
 test("community and lecture modules add their folders", () => {
@@ -25,8 +24,8 @@ test("community and lecture modules add their folders", () => {
     target: "generated-test",
   });
   const paths = plan.directories.map((entry) => entry.path);
-  assert(paths.includes("community"));
-  assert(paths.includes("lecture"));
+  assert(paths.includes("영역/커뮤니티"));
+  assert(paths.includes("영역/강의"));
 });
 
 test("optional modules are added without duplicate folders", () => {
@@ -36,8 +35,8 @@ test("optional modules are added without duplicate folders", () => {
     target: "generated-test",
   });
   const paths = plan.directories.map((entry) => entry.path);
-  assert(paths.includes("ops/automation"));
-  assert.equal(paths.filter((entry) => entry === "content").length, 1);
+  assert(paths.includes("영역/운영/자동화"));
+  assert.equal(paths.filter((entry) => entry === "영역/콘텐츠").length, 1);
 });
 
 test("interview profile validates and drives generation", () => {
@@ -63,7 +62,7 @@ test("interview profile validates and drives generation", () => {
 test("brand module adds the brand folder", () => {
   const plan = buildPlan({ preset: "freelancer", modules: ["brand"], target: "generated-test" });
   const paths = plan.directories.map((entry) => entry.path);
-  assert(paths.includes("brand"));
+  assert(paths.includes("기업자료/브랜드"));
 });
 
 test("profiles from the previous schema version still load", () => {
@@ -135,7 +134,7 @@ test("brand module writes guidelines and an agent skill carrying the profile val
       },
     });
 
-    const guidelines = fs.readFileSync(path.join(target, "brand", "brand-guidelines.md"), "utf8");
+    const guidelines = fs.readFileSync(path.join(target, "기업자료", "브랜드", "브랜드_규격.md"), "utf8");
     assert(guidelines.includes("#1A2B3C"));
     assert(guidelines.includes("Test Sans"));
     // the skill file is the single source of truth for brand values
@@ -177,14 +176,15 @@ test("generator creates starter files and refuses overwrite", () => {
     assert(fs.existsSync(path.join(target, ".soloandco", "config.json")));
     assert(fs.existsSync(path.join(target, ".soloandco", "onboarding-check.mjs")));
     assert(fs.existsSync(path.join(target, "onboarding.md")));
-    assert(fs.existsSync(path.join(target, "members", "_templates", "member-overview.md")));
-    assert(fs.existsSync(path.join(target, "ops", "scorecard.md")));
+    assert(fs.existsSync(path.join(target, "영역", "멤버", "_양식", "멤버_프로필.md")));
+    assert(fs.existsSync(path.join(target, "기업자료", "결정기록.md")));
+    assert(fs.existsSync(path.join(target, "기업자료", "핵심지표.md")));
     assert.match(fs.readFileSync(path.join(target, "AGENTS.md"), "utf8"), /필수 온보딩 관문/);
     assert.doesNotMatch(fs.readFileSync(path.join(target, "AGENTS.md"), "utf8"), /Claude와 Codex에 동일하게 적용/);
     assert.match(fs.readFileSync(path.join(target, "AGENTS.md"), "utf8"), /\.claude\/skills/);
     assert.match(fs.readFileSync(path.join(target, "CLAUDE.md"), "utf8"), /AGENTS\.md/);
-    assert.match(fs.readFileSync(path.join(target, "README.md"), "utf8"), /`sales\/` \| [^|]+ \| 온보딩 후 \|/);
-    assert(!fs.existsSync(path.join(target, "sales", "index.md")));
+    assert.match(fs.readFileSync(path.join(target, "README.md"), "utf8"), /`영역\/영업\/` \| [^|]+ \| 온보딩 후 \|/);
+    assert(!fs.existsSync(path.join(target, "영역", "영업", "index.md")));
     assert.throws(
       () => generateWorkspace({ preset: "management-agency", target, name: "Again", modules: [] }),
       /Target must be empty or absent/,
@@ -283,13 +283,13 @@ test("the shipped Notion template carries every table and page", () => {
   assert.match(template, /오늘 기록/);
 });
 
-test("ventures module reuses experiments instead of adding a second experiment folder", () => {
-  const plan = buildPlan({ preset: "solo-founder", modules: ["ventures"], target: "generated-test" });
-  const paths = plan.directories.map((entry) => entry.path);
-  assert.equal(paths.filter((entry) => entry === "experiments").length, 1);
-  assert(!paths.includes("ventures"));
-  const freelancer = buildPlan({ preset: "freelancer", modules: ["ventures"], target: "generated-test" });
-  assert(freelancer.directories.some((entry) => entry.path === "experiments"));
+test("folders follow PARA: projects, areas, company facts, archive", () => {
+  for (const preset of ["solo-founder", "freelancer", "management-agency"]) {
+    const plan = buildPlan({ preset, modules: ["ventures"], target: "generated-test" });
+    const tops = [...new Set(plan.directories.map((entry) => entry.path.split("/")[0]))];
+    assert.deepEqual(tops, ["프로젝트", "영역", "기업자료", "보관"], preset);
+    assert(plan.directories.some((entry) => entry.path === "기업자료/제공자료"));
+  }
 });
 
 test("localDate uses the local calendar day, not UTC", () => {
@@ -298,11 +298,8 @@ test("localDate uses the local calendar day, not UTC", () => {
   assert.equal(localDate(new Date(2026, 0, 5, 23, 59)), "2026-01-05");
 });
 
-for (const [preset, pricing, contacts, pipeline, counterpartyDir] of [
-  ["solo-founder", "offers/pricing.md", "business/contacts.md", "customers/pipeline.md", "customers"],
-  ["freelancer", "services/pricing.md", "ops/contacts.md", "sales/pipeline.md", "clients"],
-  ["management-agency", "services/pricing.md", "ops/contacts.md", "sales/pipeline.md", "sales"],
-]) {
+for (const preset of ["solo-founder", "freelancer", "management-agency"]) {
+  const [pricing, contacts, pipeline, counterpartyDir] = ["기업자료/가격.md", "기업자료/연락처.md", "영역/고객/고객목록.md", "영역/고객"];
   test(`${preset} workspace ships record tables and a doc-mcp config that point at them`, async () => {
     const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "soloandco-tables-test-"));
     const target = path.join(temporaryRoot, "workspace");
@@ -325,31 +322,41 @@ for (const [preset, pricing, contacts, pipeline, counterpartyDir] of [
       assert.throws(() => readCounterparty(loaded, "없는 고객"), /상대를 찾지 못했다/);
 
       // no per-folder index stubs; empty folders keep a .gitkeep instead
-      assert(!fs.existsSync(path.join(target, "knowledge", "index.md")));
-      assert(fs.existsSync(path.join(target, "knowledge", "_inbox", ".gitkeep")));
+      assert(!fs.existsSync(path.join(target, "기업자료", "index.md")));
+      assert(fs.existsSync(path.join(target, "기업자료", "제공자료", ".gitkeep")));
     } finally {
       fs.rmSync(temporaryRoot, { recursive: true, force: true });
     }
   });
 }
 
-test("ir module writes four record tables, lists them in README, and is gated", () => {
+test("ir module reserves IR/ for the IR tool, gates it, and adds its placement rule", () => {
   const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "soloandco-ir-test-"));
   const target = path.join(temporaryRoot, "workspace");
   try {
     generateWorkspace({ preset: "solo-founder", target, name: "IR Co", modules: ["ir"] });
-    for (const file of ["metrics.md", "market.md", "story.md", "funding.md"]) {
-      assert(fs.existsSync(path.join(target, "ir", file)), file);
-    }
-    assert(fs.existsSync(path.join(target, "ir", "decks", ".gitkeep")));
-    const metrics = fs.readFileSync(path.join(target, "ir", "metrics.md"), "utf8");
+    assert(fs.existsSync(path.join(target, "IR", ".gitkeep")));
+    assert.deepEqual(fs.readdirSync(path.join(target, "IR")), [".gitkeep"]);
+    assert(fs.readdirSync(target).includes("IR"));
+    const metrics = fs.readFileSync(path.join(target, "기업자료", "핵심지표.md"), "utf8");
     assert.match(metrics, /\| 지표 \| 값 \| 단위 \| 기준일 \| 출처 \| 비고 \|/);
     assert.doesNotMatch(metrics, /\| 0 \|/);
     const readme = fs.readFileSync(path.join(target, "README.md"), "utf8");
-    assert.match(readme, /`ir\/metrics\.md`/);
-    assert.match(readme, /`ir\/` \| [^|]+ \| 온보딩 후 \|/);
+    assert.match(readme, /`IR\/` \| [^|]+ \| 온보딩 후 \|/);
+    const agents = fs.readFileSync(path.join(target, "AGENTS.md"), "utf8");
+    assert.match(agents, /IR\/<라운드>\//);
+    assert.match(agents, /`최종\/`/);
   } finally {
     fs.rmSync(temporaryRoot, { recursive: true, force: true });
+  }
+  const without = fs.mkdtempSync(path.join(os.tmpdir(), "soloandco-noir-test-"));
+  try {
+    const plain = path.join(without, "workspace");
+    generateWorkspace({ preset: "freelancer", target: plain, name: "No IR", modules: [] });
+    assert(!fs.existsSync(path.join(plain, "IR")));
+    assert.doesNotMatch(fs.readFileSync(path.join(plain, "AGENTS.md"), "utf8"), /IR\/<라운드>/);
+  } finally {
+    fs.rmSync(without, { recursive: true, force: true });
   }
 });
 
@@ -366,9 +373,9 @@ test("--notion yes sets up the Notion task board; --notion no tells agents to st
     assert.match(onRun.stdout, /Notion: on/);
     const onConfig = JSON.parse(fs.readFileSync(path.join(on, ".soloandco", "config.json"), "utf8"));
     assert.deepEqual(onConfig.notion, { enabled: true, workLogUrl: null });
-    const workLog = fs.readFileSync(path.join(on, "ops", "notion-work-log.md"), "utf8");
+    const workLog = fs.readFileSync(path.join(on, "영역", "운영", "노션_업무기록표.md"), "utf8");
     assert.match(workLog, /\| 업무 \| 상태 \| 영역 \| 관련 대상 \| 메모 \| 결과 위치 \| 기한 \| 완료일 \| 소요 시간 \|/);
-    assert.match(workLog, /customers\/가나상사\//);
+    assert.match(workLog, /영역\/고객\/가나상사\//);
     assert(fs.existsSync(path.join(on, ".soloandco", "session-time.mjs")));
     const onAgents = fs.readFileSync(path.join(on, "AGENTS.md"), "utf8");
     assert.match(onAgents, /작업을 시작하기 전에/);
@@ -390,7 +397,7 @@ test("--notion yes sets up the Notion task board; --notion no tells agents to st
     assert.match(offRun.stdout, /Notion: off/);
     const offConfig = JSON.parse(fs.readFileSync(path.join(off, ".soloandco", "config.json"), "utf8"));
     assert.deepEqual(offConfig.notion, { enabled: false });
-    assert(!fs.existsSync(path.join(off, "ops", "notion-work-log.md")));
+    assert(!fs.existsSync(path.join(off, "영역", "운영", "노션_업무기록표.md")));
     assert(!fs.existsSync(path.join(off, ".soloandco", "session-time.mjs")));
     assert.match(fs.readFileSync(path.join(off, "AGENTS.md"), "utf8"), /노션을 쓰지 않습니다/);
     assert.doesNotMatch(fs.readFileSync(path.join(off, "README.md"), "utf8"), /## 노션 연동/);
@@ -431,7 +438,7 @@ test("--notion rejects unknown values and a profile answer is used", () => {
     const target = path.join(temporaryRoot, "workspace");
     const run = spawnSync(process.execPath, [cliPath, "--profile", profilePath, "--target", target], { encoding: "utf8" });
     assert.equal(run.status, 0, run.stderr);
-    assert(fs.existsSync(path.join(target, "ops", "notion-work-log.md")));
+    assert(fs.existsSync(path.join(target, "영역", "운영", "노션_업무기록표.md")));
   } finally {
     fs.rmSync(temporaryRoot, { recursive: true, force: true });
   }

@@ -1,18 +1,18 @@
 {
   "workspace_root": "",
   "pricing": {
-    "path": "offers/pricing.md",
+    "path": "기업자료/가격.md",
     "fields": { "metric": "수치", "key": "키", "value": "값", "source": "정본", "verified_at": "확인일" }
   },
   "contacts": {
-    "path": "business/contacts.md",
+    "path": "기업자료/연락처.md",
     "fields": { "label": "항목", "value": "값" },
     "lookup": { "person": "담당", "email": "이메일" }
   },
   "counterparties": {
-    "path": "customers/pipeline.md",
+    "path": "영역/고객/고객목록.md",
     "fields": { "id": "lead_id", "name": "대상", "stage": "단계", "slug": "폴더" },
-    "dir": "customers/leads"
+    "dir": "영역/고객"
   },
   "issuer": { "display_name": "", "business_number": "" },
   "brand": { "accent": "", "ink": "", "font_family": "" },

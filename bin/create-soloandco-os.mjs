@@ -126,7 +126,7 @@ async function main() {
   process.stdout.write("Then run: node .soloandco/onboarding-check.mjs\n");
   process.stdout.write(
     plan.notion
-      ? "Notion: on. Import ops/notion-work-log.md into Notion, then put the table URL in .soloandco/config.json (notion.workLogUrl)\n"
+      ? "Notion: on. Import 영역/운영/노션_업무기록표.md into Notion, then put the table URL in .soloandco/config.json (notion.workLogUrl)\n"
       : "Notion: off\n",
   );
 }

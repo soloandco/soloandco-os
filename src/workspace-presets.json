@@ -1,37 +1,38 @@
 {
-  "schemaVersion": "0.2.0",
+  "schemaVersion": "0.3.0",
   "common": [
-    { "path": "ops", "title": "운영", "description": "주간·월간 운영과 회사 공통 업무" },
-    { "path": "knowledge", "title": "지식", "description": "재사용 가능한 플레이북·레퍼런스·교훈" },
-    { "path": "knowledge/_inbox", "title": "지식 인박스", "description": "아직 분류되지 않은 자료의 임시 투입구" },
-    { "path": "memory", "title": "기억", "description": "의사결정과 주기 리뷰" },
-    { "path": "memory/reviews", "title": "리뷰", "description": "주간·월간·분기 운영 리뷰" }
+    { "path": "프로젝트", "title": "프로젝트", "description": "끝나는 날이 있는 일. 폴더 하나에 일 하나(YYYY-MM-이름). 끝나면 보관으로 옮김" },
+    { "path": "영역", "title": "영역", "description": "끝나지 않고 계속 맡는 일" },
+    { "path": "영역/고객", "title": "고객", "description": "고객 목록과 고객별 폴더. 견적서가 여기 저장됨" },
+    { "path": "영역/운영", "title": "운영", "description": "주간 점검·도구·업무 방식" },
+    { "path": "기업자료", "title": "기업자료", "description": "회사 사실의 정본. 숫자·가격·연락처·결정·보고서" },
+    { "path": "기업자료/제공자료", "title": "제공자료", "description": "새로 받은 자료를 일단 넣는 곳. 이름·형식 자유" },
+    { "path": "기업자료/원본보고서", "title": "원본보고서", "description": "외부 분석 보고서 PDF를 받은 그대로" },
+    { "path": "기업자료/BM", "title": "사업별 분석", "description": "사업(BM)이 여럿이면 사업마다 폴더 하나" },
+    { "path": "보관", "title": "보관", "description": "끝난 프로젝트와 더는 쓰지 않는 자료. 지우지 않고 통째로 옮김" }
   ],
   "modules": {
     "automation": [
-      { "path": "ops/automation", "title": "자동화", "description": "반복 점검·리뷰·검사 스크립트" }
+      { "path": "영역/운영/자동화", "title": "자동화", "description": "반복 점검·리뷰·검사 스크립트" }
     ],
     "brand": [
-      { "path": "brand", "title": "브랜드", "description": "색·서체·톤·로고 규격과 사용 규칙" }
+      { "path": "기업자료/브랜드", "title": "브랜드", "description": "색·서체·톤·로고 규격과 사용 규칙" }
     ],
     "community": [
-      { "path": "community", "title": "커뮤니티", "description": "참여자·모임·프로그램 운영과 기록" }
+      { "path": "영역/커뮤니티", "title": "커뮤니티", "description": "참여자·모임·프로그램 운영과 기록" }
     ],
     "content": [
-      { "path": "content", "title": "콘텐츠", "description": "채널별 콘텐츠·아이디어·성과" }
+      { "path": "영역/콘텐츠", "title": "콘텐츠", "description": "채널별 콘텐츠·아이디어·성과" }
     ],
     "ir": [
-      { "path": "ir", "title": "IR", "description": "투자·지원사업 자료의 재료. 수치·시장·사업 이야기·자금 계획" },
-      { "path": "ir/decks", "title": "IR 자료", "description": "만든 IR 자료의 버전별 보관" }
+      { "path": "IR", "title": "IR", "description": "투자 라운드마다 폴더 하나(IR/<라운드>/작업·최종·자료). IR 제작 도구가 이 자리에 씀" }
     ],
     "lecture": [
-      { "path": "lecture", "title": "강의", "description": "강의·워크숍 기획·자료·수강 피드백" }
+      { "path": "영역/강의", "title": "강의", "description": "강의·워크숍 기획·자료·수강 피드백" }
     ],
-    "ventures": [
-      { "path": "experiments", "title": "실험", "description": "가설·행동·수치·학습. 새 수익 모델·제품·시장 실험 포함" }
-    ],
+    "ventures": [],
     "website": [
-      { "path": "website", "title": "홈페이지", "description": "사이트 콘텐츠·전환·분석·배포" }
+      { "path": "영역/홈페이지", "title": "홈페이지", "description": "사이트 콘텐츠·전환·분석·배포" }
     ]
   },
   "presets": {
@@ -39,39 +40,33 @@
       "title": "1인 사업자 매니지먼트",
       "description": "여러 1인 창업자·프리랜서를 소속 멤버로 관리하는 조직",
       "directories": [
-        { "path": "members", "title": "소속 멤버", "description": "멤버별 프로필·성장·고객·계약·정산" },
-        { "path": "members/_templates", "title": "멤버 템플릿", "description": "신규 멤버 온보딩에 복사하는 템플릿" },
-        { "path": "services", "title": "멤버 지원 서비스", "description": "멤버에게 제공하는 지원 항목과 진행 절차" },
-        { "path": "sales", "title": "영업", "description": "신규 멤버 후보와 고객의 발굴·상담·제안" },
-        { "path": "finance", "title": "재무", "description": "회사 매출·비용과 멤버 정산" },
-        { "path": "legal", "title": "계약과 정책", "description": "표준 계약·개인정보·운영 정책" }
+        { "path": "영역/멤버", "title": "소속 멤버", "description": "멤버별 프로필·성장·고객·계약·정산" },
+        { "path": "영역/멤버/_양식", "title": "멤버 양식", "description": "신규 멤버 온보딩에 복사하는 양식" },
+        { "path": "영역/서비스", "title": "멤버 지원 서비스", "description": "멤버에게 제공하는 지원 항목과 진행 절차" },
+        { "path": "영역/영업", "title": "영업", "description": "신규 멤버 후보와 고객의 발굴·상담·제안" },
+        { "path": "영역/재무", "title": "재무", "description": "회사 매출·비용과 멤버 정산" },
+        { "path": "영역/계약과정책", "title": "계약과 정책", "description": "표준 계약·개인정보·운영 정책" }
       ]
     },
     "solo-founder": {
       "title": "1인 창업자",
       "description": "자신의 상품·고객·콘텐츠·재무·실험을 운영하는 1인 사업자",
       "directories": [
-        { "path": "business", "title": "사업 정본", "description": "포지셔닝·목표·현재 상태" },
-        { "path": "offers", "title": "상품", "description": "판매하는 서비스·제품·가격·프로세스" },
-        { "path": "customers", "title": "고객", "description": "리드·상담·제안·계약·관계" },
-        { "path": "projects", "title": "프로젝트", "description": "기한과 결과가 있는 실행 단위" },
-        { "path": "content", "title": "콘텐츠", "description": "채널별 발행물·아이디어·성과" },
-        { "path": "finance", "title": "재무", "description": "청구·수금·비용·월 마감" },
-        { "path": "experiments", "title": "실험", "description": "가설·행동·수치·학습. 새 수익 모델·제품·시장 실험 포함" },
-        { "path": "assets", "title": "자산", "description": "로고·사진·원본·공개 자산" }
+        { "path": "영역/상품", "title": "상품", "description": "판매하는 서비스·제품과 진행 방식" },
+        { "path": "영역/콘텐츠", "title": "콘텐츠", "description": "채널별 발행물·아이디어·성과" },
+        { "path": "영역/재무", "title": "재무", "description": "청구·수금·비용·월 마감" },
+        { "path": "기업자료/자산", "title": "자산", "description": "로고·사진·원본·공개 자산" }
       ]
     },
     "freelancer": {
       "title": "프리랜서",
       "description": "여러 고객의 영업·프로젝트·납품·청구를 관리하는 독립 전문가",
       "directories": [
-        { "path": "clients", "title": "고객사", "description": "고객별 프로필·계약·프로젝트·민감 자료" },
-        { "path": "services", "title": "서비스", "description": "판매 서비스·범위·가격·프로세스" },
-        { "path": "sales", "title": "영업", "description": "리드·상담·견적·제안" },
-        { "path": "projects", "title": "프로젝트", "description": "착수·실행·납품·회고" },
-        { "path": "content", "title": "콘텐츠", "description": "포트폴리오·채널·사례" },
-        { "path": "finance", "title": "재무", "description": "청구·수금·비용·세금 자료" },
-        { "path": "assets", "title": "재사용 자산", "description": "템플릿·브랜드·포트폴리오 원본" }
+        { "path": "영역/서비스", "title": "서비스", "description": "판매 서비스·범위와 진행 방식" },
+        { "path": "영역/영업", "title": "영업", "description": "리드·상담·견적·제안" },
+        { "path": "영역/콘텐츠", "title": "콘텐츠", "description": "포트폴리오·채널·사례" },
+        { "path": "영역/재무", "title": "재무", "description": "청구·수금·비용·세금 자료" },
+        { "path": "기업자료/자산", "title": "재사용 자산", "description": "템플릿·브랜드·포트폴리오 원본" }
       ]
     }
   }
