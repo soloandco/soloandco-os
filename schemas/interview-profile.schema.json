@@ -19,6 +19,10 @@
       "uniqueItems": true,
       "items": { "enum": ["automation", "brand", "community", "content", "ir", "lecture", "ventures", "website"] }
     },
+    "notion": {
+      "description": "true: record every instructed task in a Notion table while business facts stay in the folder. false or omitted: folder only.",
+      "type": "boolean"
+    },
     "brand": {
       "description": "Added in 0.2.0. Drives brand/brand-guidelines.md and the generated brand skill. Omit it entirely when the user has no settled brand yet.",
       "type": "object",

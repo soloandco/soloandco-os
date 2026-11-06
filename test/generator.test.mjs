@@ -352,3 +352,87 @@ test("ir module writes four record tables, lists them in README, and is gated", 
     fs.rmSync(temporaryRoot, { recursive: true, force: true });
   }
 });
+
+test("--notion yes sets up the Notion task board; --notion no tells agents to stay off Notion", () => {
+  const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "soloandco-notion-choice-"));
+  try {
+    const on = path.join(temporaryRoot, "on");
+    const onRun = spawnSync(
+      process.execPath,
+      [cliPath, "--preset", "solo-founder", "--target", on, "--name", "On Co", "--notion", "yes"],
+      { encoding: "utf8" },
+    );
+    assert.equal(onRun.status, 0, onRun.stderr);
+    assert.match(onRun.stdout, /Notion: on/);
+    const onConfig = JSON.parse(fs.readFileSync(path.join(on, ".soloandco", "config.json"), "utf8"));
+    assert.deepEqual(onConfig.notion, { enabled: true, workLogUrl: null });
+    const workLog = fs.readFileSync(path.join(on, "ops", "notion-work-log.md"), "utf8");
+    assert.match(workLog, /\| 업무 \| 상태 \| 영역 \| 관련 대상 \| 메모 \| 결과 위치 \| 기한 \| 완료일 \| 소요 시간 \|/);
+    assert.match(workLog, /customers\/가나상사\//);
+    assert(fs.existsSync(path.join(on, ".soloandco", "session-time.mjs")));
+    const onAgents = fs.readFileSync(path.join(on, "AGENTS.md"), "utf8");
+    assert.match(onAgents, /작업을 시작하기 전에/);
+    assert.match(onAgents, /노션 기록: <업무> · <상태>/);
+    assert.match(fs.readFileSync(path.join(on, "README.md"), "utf8"), /## 노션 연동/);
+    // the copied timer runs inside the generated workspace
+    const timer = spawnSync(process.execPath, [path.join(on, ".soloandco", "session-time.mjs"), "--help"], {
+      encoding: "utf8",
+    });
+    assert.notEqual(timer.error?.code, "ENOENT");
+
+    const off = path.join(temporaryRoot, "off");
+    const offRun = spawnSync(
+      process.execPath,
+      [cliPath, "--preset", "solo-founder", "--target", off, "--notion", "no"],
+      { encoding: "utf8" },
+    );
+    assert.equal(offRun.status, 0, offRun.stderr);
+    assert.match(offRun.stdout, /Notion: off/);
+    const offConfig = JSON.parse(fs.readFileSync(path.join(off, ".soloandco", "config.json"), "utf8"));
+    assert.deepEqual(offConfig.notion, { enabled: false });
+    assert(!fs.existsSync(path.join(off, "ops", "notion-work-log.md")));
+    assert(!fs.existsSync(path.join(off, ".soloandco", "session-time.mjs")));
+    assert.match(fs.readFileSync(path.join(off, "AGENTS.md"), "utf8"), /노션을 쓰지 않습니다/);
+    assert.doesNotMatch(fs.readFileSync(path.join(off, "README.md"), "utf8"), /## 노션 연동/);
+  } finally {
+    fs.rmSync(temporaryRoot, { recursive: true, force: true });
+  }
+});
+
+test("without a terminal and without --notion, Notion stays off", () => {
+  const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "soloandco-notion-default-"));
+  try {
+    const target = path.join(temporaryRoot, "workspace");
+    const run = spawnSync(process.execPath, [cliPath, "--preset", "freelancer", "--target", target], {
+      encoding: "utf8",
+    });
+    assert.equal(run.status, 0, run.stderr);
+    const config = JSON.parse(fs.readFileSync(path.join(target, ".soloandco", "config.json"), "utf8"));
+    assert.equal(config.notion.enabled, false);
+  } finally {
+    fs.rmSync(temporaryRoot, { recursive: true, force: true });
+  }
+});
+
+test("--notion rejects unknown values and a profile answer is used", () => {
+  const bad = spawnSync(process.execPath, [cliPath, "--preset", "freelancer", "--target", "x", "--notion", "maybe"], {
+    encoding: "utf8",
+  });
+  assert.notEqual(bad.status, 0);
+  assert.match(bad.stderr, /Unknown --notion value/);
+
+  const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "soloandco-notion-profile-"));
+  try {
+    const profilePath = path.join(temporaryRoot, "profile.json");
+    fs.writeFileSync(
+      profilePath,
+      JSON.stringify({ schemaVersion: "0.2.0", workspaceName: "Profile Co", preset: "freelancer", modules: [], notion: true }),
+    );
+    const target = path.join(temporaryRoot, "workspace");
+    const run = spawnSync(process.execPath, [cliPath, "--profile", profilePath, "--target", target], { encoding: "utf8" });
+    assert.equal(run.status, 0, run.stderr);
+    assert(fs.existsSync(path.join(target, "ops", "notion-work-log.md")));
+  } finally {
+    fs.rmSync(temporaryRoot, { recursive: true, force: true });
+  }
+});

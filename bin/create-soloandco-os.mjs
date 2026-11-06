@@ -8,7 +8,7 @@ const STARTS = ["notion", "folder"];
 
 function usage() {
   const manifest = loadManifest();
-  return `Solo & Co OS workspace generator\n\nUsage:\n  create-soloandco-os --preset <name> --target <path> [--name <workspace>] [--modules a,b] [--dry-run]\n  create-soloandco-os --profile <interview-profile.json> --target <path> [--dry-run]\n  create-soloandco-os --start notion|folder\n  create-soloandco-os --list\n\nStart:\n  notion             노션 템플릿으로 시작합니다. 설치가 필요 없습니다\n  folder             파일 기반 워크스페이스를 생성합니다\n\nPresets:\n${Object.entries(manifest.presets)
+  return `Solo & Co OS workspace generator\n\nUsage:\n  create-soloandco-os --preset <name> --target <path> [--name <workspace>] [--modules a,b] [--notion yes|no] [--dry-run]\n  create-soloandco-os --profile <interview-profile.json> --target <path> [--notion yes|no] [--dry-run]\n  create-soloandco-os --start notion|folder\n  create-soloandco-os --list\n\nStart:\n  notion             노션 템플릿으로 시작합니다. 설치가 필요 없습니다\n  folder             파일 기반 워크스페이스를 생성합니다\n\nNotion (파일 기반일 때):\n  yes                업무를 노션 표에 기록하고, 사업 자료는 폴더에 둡니다\n  no                 노션을 쓰지 않습니다\n  생략하면 터미널에서 한 번 묻고, 답할 수 없는 환경에서는 no 입니다\n\nPresets:\n${Object.entries(manifest.presets)
     .map(([name, value]) => `  ${name.padEnd(18)} ${value.description}`)
     .join("\n")}\n\nModules:\n  ${Object.keys(manifest.modules).join(", ")}\n`;
 }
@@ -41,6 +41,26 @@ async function resolveStart(explicit, presetChosen) {
     const answer = await rl.question("노션 템플릿을 먼저 만들까요? 설치 없이 노션에서 바로 씁니다. [Y/n] ");
     const normalized = answer.trim().toLowerCase();
     return normalized === "" || normalized === "y" || normalized === "yes" ? "notion" : "folder";
+  } finally {
+    rl.close();
+  }
+}
+
+// Asked once at install: Notion as the task board, or folder only. The profile answer wins, then the flag.
+async function resolveNotion(explicit, profileValue, dryRun) {
+  if (typeof profileValue === "boolean" && explicit === undefined) return profileValue;
+  if (explicit !== undefined) {
+    if (explicit !== "yes" && explicit !== "no") throw new Error(`Unknown --notion value: ${explicit}`);
+    return explicit === "yes";
+  }
+  if (dryRun || !process.stdin.isTTY || !process.stdout.isTTY) return false;
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  try {
+    const answer = await rl.question(
+      "노션과 연동할까요? 맡긴 일이 노션 표에 기록되고, 사업 자료는 이 폴더에 남습니다. [y/N] ",
+    );
+    const normalized = answer.trim().toLowerCase();
+    return normalized === "y" || normalized === "yes";
   } finally {
     rl.close();
   }
@@ -86,11 +106,13 @@ async function main() {
 
   const interviewProfile = arguments_.profile ? loadProfile(arguments_.profile) : undefined;
   const modules = interviewProfile?.modules ?? arguments_.modules?.split(",").filter(Boolean) ?? [];
+  const notion = await resolveNotion(arguments_.notion, interviewProfile?.notion, arguments_.dryRun);
   const options = {
     preset: interviewProfile?.preset ?? arguments_.preset,
     name: interviewProfile?.workspaceName ?? arguments_.name,
     modules,
     profile: interviewProfile,
+    notion,
     target: arguments_.target,
   };
 
@@ -102,6 +124,11 @@ async function main() {
   process.stdout.write(`Created ${plan.preset} workspace at ${plan.target}\n`);
   process.stdout.write("BLOCKED: complete onboarding.md before homepage, content, marketing, sales, or branding work\n");
   process.stdout.write("Then run: node .soloandco/onboarding-check.mjs\n");
+  process.stdout.write(
+    plan.notion
+      ? "Notion: on. Import ops/notion-work-log.md into Notion, then put the table URL in .soloandco/config.json (notion.workLogUrl)\n"
+      : "Notion: off\n",
+  );
 }
 
 main().catch((error) => {

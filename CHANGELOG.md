@@ -22,6 +22,7 @@ All notable changes are documented here. This project follows Semantic Versionin
 - generated brand skill disables itself and asks the user when no brand values were captured
 - record tables generated empty in every workspace (pricing, contacts, customer pipeline) plus `.soloandco/doc-mcp.config.json` pointing at them, so the quote tool works without hand-written paths
 - `ir` module: `ir/metrics.md`, `ir/market.md`, `ir/story.md`, `ir/funding.md` as the single source for investor and grant material, with `ir/decks/` for produced versions; gated by onboarding like sales
+- install-time Notion choice for file workspaces (`--notion yes|no`, interactive question, or `notion` in the interview profile). Yes adds `ops/notion-work-log.md`, a copy of `session-time.mjs`, and `AGENTS.md` rules that log every instructed task in Notion before work starts; no tells agents to stay off Notion. The choice is stored in `.soloandco/config.json`
 
 ### Changed
 

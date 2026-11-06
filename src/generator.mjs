@@ -54,7 +54,7 @@ function brandErrors(brand) {
   return errors;
 }
 
-export function buildPlan({ preset, name = "My Business OS", target = ".", modules = [], profile }) {
+export function buildPlan({ preset, name = "My Business OS", target = ".", modules = [], profile, notion = false }) {
   const manifest = loadManifest();
   const selected = manifest.presets[preset];
   if (!selected) {
@@ -80,6 +80,7 @@ export function buildPlan({ preset, name = "My Business OS", target = ".", modul
     name,
     modules,
     profile,
+    notion: notion === true,
     target: path.resolve(target),
     directories,
     tables: tableLocations[preset],
@@ -247,7 +248,7 @@ ${rows}
 |---|---|
 ${tables}
 
-## 첫 10분
+${plan.notion ? notionReadmeSection() : ""}## 첫 10분
 
 1. 다른 업무보다 먼저 루트의 [필수 온보딩](onboarding.md)을 운영자와 작성합니다.
 2. \`status: active\`로 바꾼 뒤 \`node .soloandco/onboarding-check.mjs\`를 실행합니다.
@@ -261,7 +262,7 @@ ${tables}
 }
 
 function agentsMarkdown(plan) {
-  return `# ${plan.name}\n\n이 워크스페이스는 Solo & Co OS \`${plan.preset}\` 프리셋으로 생성되었습니다.\n\n> 이 파일이 AI 도구가 읽는 워크스페이스 규칙의 정본입니다. \`CLAUDE.md\`는 이 파일을 가리키는 포인터입니다.\n\n## 규칙과 스킬의 위치\n\n- 규칙은 이 파일에만 기록하고 \`CLAUDE.md\`에는 복사하지 않습니다.\n- 스킬의 정본은 \`.claude/skills/\`입니다. 관련 작업 전에 그 안의 해당 \`SKILL.md\`를 읽습니다.\n\n## 필수 온보딩 관문\n\n- 모든 세션은 루트의 \`onboarding.md\`를 먼저 읽고 \`node .soloandco/onboarding-check.mjs\`를 실행합니다.\n- 문서가 없거나 검사가 실패하면 다른 요청보다 온보딩을 먼저 안내합니다. 운영자에게 필수 값을 하나씩 확인받고 문서에 기록합니다.\n- 온보딩 완료 전 허용되는 작업은 온보딩 작성, 기존 자료 수집, 증거 위치 확인뿐입니다.\n- 온보딩 완료 전에는 홈페이지 카피·콘텐츠 원고·마케팅 캠페인·영업 제안·브랜드 메시지를 만들거나 확정하지 않습니다.\n- 값을 기존 문서에서 추정하지 않습니다. 운영자가 확인한 뒤 \`status: active\`로 바꾸고 검사 통과를 확인합니다.\n\n## 운영 규칙\n\n- 폴더 지도는 루트 \`README.md\` 한 곳에 둡니다. 폴더 안 파일이 10개를 넘을 때만 그 폴더에 \`index.md\`를 만듭니다.\n- 가격·연락처·고객·수치처럼 반복되는 기록은 README 「고정 표」의 파일에 한 줄씩 추가합니다. 같은 내용을 요약 문서로 따로 만들지 않습니다.\n- 프로젝트 폴더는 \`YYYY-MM-<slug>/\` 형식을 권장합니다.\n- 실제 수치가 없으면 \`unknown\`으로 기록합니다.\n- 활성 업무에는 담당자, 다음 행동, 재검토일을 기록합니다.\n- 고객·계약·정산 등 민감 정보는 공개 저장소에 올리지 않습니다.\n- 한 사실에는 하나의 정본만 두고 다른 문서에서는 링크합니다.\n`;
+  return `# ${plan.name}\n\n이 워크스페이스는 Solo & Co OS \`${plan.preset}\` 프리셋으로 생성되었습니다.\n\n> 이 파일이 AI 도구가 읽는 워크스페이스 규칙의 정본입니다. \`CLAUDE.md\`는 이 파일을 가리키는 포인터입니다.\n\n## 규칙과 스킬의 위치\n\n- 규칙은 이 파일에만 기록하고 \`CLAUDE.md\`에는 복사하지 않습니다.\n- 스킬의 정본은 \`.claude/skills/\`입니다. 관련 작업 전에 그 안의 해당 \`SKILL.md\`를 읽습니다.\n\n## 필수 온보딩 관문\n\n- 모든 세션은 루트의 \`onboarding.md\`를 먼저 읽고 \`node .soloandco/onboarding-check.mjs\`를 실행합니다.\n- 문서가 없거나 검사가 실패하면 다른 요청보다 온보딩을 먼저 안내합니다. 운영자에게 필수 값을 하나씩 확인받고 문서에 기록합니다.\n- 온보딩 완료 전 허용되는 작업은 온보딩 작성, 기존 자료 수집, 증거 위치 확인뿐입니다.\n- 온보딩 완료 전에는 홈페이지 카피·콘텐츠 원고·마케팅 캠페인·영업 제안·브랜드 메시지를 만들거나 확정하지 않습니다.\n- 값을 기존 문서에서 추정하지 않습니다. 운영자가 확인한 뒤 \`status: active\`로 바꾸고 검사 통과를 확인합니다.\n\n## 운영 규칙\n\n- 폴더 지도는 루트 \`README.md\` 한 곳에 둡니다. 폴더 안 파일이 10개를 넘을 때만 그 폴더에 \`index.md\`를 만듭니다.\n- 가격·연락처·고객·수치처럼 반복되는 기록은 README 「고정 표」의 파일에 한 줄씩 추가합니다. 같은 내용을 요약 문서로 따로 만들지 않습니다.\n- 프로젝트 폴더는 \`YYYY-MM-<slug>/\` 형식을 권장합니다.\n- 실제 수치가 없으면 \`unknown\`으로 기록합니다.\n- 활성 업무에는 담당자, 다음 행동, 재검토일을 기록합니다.\n- 고객·계약·정산 등 민감 정보는 공개 저장소에 올리지 않습니다.\n- 한 사실에는 하나의 정본만 두고 다른 문서에서는 링크합니다.\n\n${plan.notion ? notionAgentsSection() : notionOffAgentsSection()}`;
 }
 
 // Claude Code auto-loads CLAUDE.md (not AGENTS.md), so ship a pointer file.
@@ -658,6 +659,84 @@ function writeTableFiles(target, plan, date) {
   write(".soloandco/doc-mcp.config.json", `${JSON.stringify(docMcpConfig(target, plan), null, 2)}\n`);
 }
 
+// ---------- Notion ----------
+// With Notion on, the folder stays the source of truth for business facts and Notion becomes the
+// task board: every instructed task gets a row before work starts. With Notion off, agents are told
+// not to write to Notion even when their tool happens to have it connected.
+
+const notionWorkLogPath = "ops/notion-work-log.md";
+const sessionTimeSource = path.join(sourceDirectory, "..", "scripts", "session-time.mjs");
+
+function notionReadmeSection() {
+  return `## 노션 연동
+
+업무 진행은 노션 표에서 보고, 사업 자료와 근거는 이 폴더에 둡니다.
+
+1. 노션에서 \`가져오기 → Markdown\`으로 \`${notionWorkLogPath}\`를 올리고, 표를 데이터베이스로 전환합니다.
+2. AI 도구(클로드 등)에 노션을 연결합니다.
+3. 표 주소를 \`.soloandco/config.json\`의 \`notion.workLogUrl\`에 붙여 넣습니다. 비워 두면 AI가 처음 일할 때 묻습니다.
+4. 일을 하나 시켜 보고, 답 끝에 「노션 기록:」 한 줄이 붙는지 확인합니다.
+
+`;
+}
+
+function notionAgentsSection() {
+  return `## 노션 연동
+
+- 사업 사실과 근거의 정본은 이 폴더입니다. 노션 「업무 기록」 표는 업무 진행을 보는 실행 화면입니다.
+- 표 주소는 \`.soloandco/config.json\`의 \`notion.workLogUrl\`에 있습니다. 비어 있으면 운영자에게 한 번 묻고 그 자리에 적습니다.
+- 운영자가 일을 시키거나 업무 이야기를 하면 **작업을 시작하기 전에** 표에 한 줄을 만듭니다. 상태 \`진행 중\`, 메모에 지시 원문, 결과 위치에 작업 파일 경로를 적습니다.
+- 같은 일의 미완료 줄이 있으면 새로 만들지 않고 그 줄을 고칩니다.
+- 끝나면 \`완료\`·완료일·메모 끝 \`결과:\` 한 줄로 고칩니다. 코드 도구(Claude Code·Codex)로 한 일은 \`node .soloandco/session-time.mjs --session <세션 id>\`로 잰 값을 소요 시간(시간 단위)에 적고, 그 밖에는 운영자에게 묻습니다.
+- 운영자 판단을 기다리면 \`내 결정 대기\`, 상대 답을 기다리면 \`외부 대기\`. 안 할 일은 지우지 않고 \`보류\`로 둡니다.
+- 기한은 운영자가 날짜를 말했을 때만 적습니다. 모르는 값은 지어내지 않고 비웁니다.
+- 답 끝에 \`노션 기록: <업무> · <상태>\` 한 줄을 붙입니다. 실패하면 \`노션 기록 실패: <이유>\`로 적습니다. 일반 질문·설명은 기록하지 않고, 애매하면 기록합니다.
+- 노션에 비밀번호·계좌번호·주민번호를 적지 않습니다.
+`;
+}
+
+function notionOffAgentsSection() {
+  return `## 노션 연동
+
+- 이 워크스페이스는 노션을 쓰지 않습니다. AI 도구에 노션이 연결돼 있어도 노션에 기록하지 않고, 업무 기록은 이 폴더에만 남깁니다.
+- 운영자가 연동을 원하면 Solo & Co OS README의 「노션 연동」 절대로 이 절과 \`.soloandco/config.json\`의 \`notion\` 값을 바꿉니다.
+`;
+}
+
+function notionWorkLogMarkdown(plan, date) {
+  const examplePath = `${plan.tables.counterpartyDir}/가나상사/quote-가나상사-${date}.html`;
+  return `${frontmatter({ type: "notion-template", title: "노션 업무 기록 표", description: "노션으로 가져올 업무 기록 표", date })}
+# 노션 업무 기록 표
+
+노션에서 \`가져오기 → Markdown\`으로 이 파일을 올리고, 표 왼쪽 위 메뉴에서 **데이터베이스로 전환**합니다. 전환한 뒤 아래 「열 설정」대로 형식과 선택지를 맞춥니다. 예시 줄은 모양을 본 뒤 지웁니다.
+
+| 업무 | 상태 | 영역 | 관련 대상 | 메모 | 결과 위치 | 기한 | 완료일 | 소요 시간 |
+|---|---|---|---|---|---|---|---|---|
+| 예시: 가나상사 견적서 만들기 | 완료 | 영업 | 가나상사 | 지시: 「가나상사 견적 만들어 줘」. 결과: 견적서 1부 작성 | \`${examplePath}\` | | ${date} | 0.5 |
+
+## 열 설정
+
+| 열 | 형식 | 선택지·규칙 |
+|---|---|---|
+| 업무 | 제목 | 동사로 끝나게. 「견적서 만들기」 |
+| 상태 | 선택 | \`할 일\` / \`진행 중\` / \`내 결정 대기\` / \`외부 대기\` / \`완료\` / \`보류\` |
+| 영역 | 선택 | \`영업\` / \`고객\` / \`콘텐츠\` / \`운영\` / \`실험\` |
+| 관련 대상 | 텍스트 | 고객·기관·멤버 이름 |
+| 메모 | 텍스트 | 지시 원문. 끝날 때 \`결과:\` 한 줄을 덧붙임 |
+| 결과 위치 | 텍스트 | 이 폴더 안 파일 경로나 링크 |
+| 기한 | 날짜 | 운영자가 날짜를 말했을 때만 |
+| 완료일 | 날짜 | \`완료\`로 바꿀 때 |
+| 소요 시간 | 숫자 | 시간 단위(1시간 30분 = 1.5) |
+
+칸은 AI가 전부 채웁니다. 사람은 상태만 바꿉니다. 손으로 채워야 하는 칸은 비어 가므로 늘리지 않습니다.
+`;
+}
+
+function writeNotionFiles(target, plan, date) {
+  fs.writeFileSync(path.join(target, notionWorkLogPath), notionWorkLogMarkdown(plan, date), "utf8");
+  fs.copyFileSync(sessionTimeSource, path.join(target, ".soloandco", "session-time.mjs"));
+}
+
 export function generateWorkspace(options) {
   const plan = buildPlan(options);
   const target = assertSafeTarget(plan.target);
@@ -684,10 +763,12 @@ export function generateWorkspace(options) {
     modules: plan.modules,
     generatedAt: date,
     onboarding: "blocked",
+    notion: plan.notion ? { enabled: true, workLogUrl: null } : { enabled: false },
     interviewProfile: plan.profile ?? null,
   };
   fs.writeFileSync(path.join(configDirectory, "config.json"), `${JSON.stringify(configuration, null, 2)}\n`, "utf8");
   fs.writeFileSync(path.join(configDirectory, "onboarding-check.mjs"), onboardingCheckScript(), "utf8");
+  if (plan.notion) writeNotionFiles(target, plan, date);
   fs.writeFileSync(path.join(target, "onboarding.md"), onboardingMarkdown(plan, date), "utf8");
   fs.writeFileSync(path.join(target, "README.md"), readmeMarkdown(plan), "utf8");
   fs.writeFileSync(path.join(target, "AGENTS.md"), agentsMarkdown(plan), "utf8");

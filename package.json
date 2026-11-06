@@ -11,6 +11,7 @@
     "src/",
     "schemas/",
     "prompts/",
+    "scripts/session-time.mjs",
     "README.md",
     "LICENSE",
     "NOTICE"
