@@ -5,7 +5,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
 
-import { buildPlan, generateWorkspace, loadProfile, localDate } from "../src/generator.mjs";
+import { buildPlan, generateWorkspace, loadProfile, localDate, reviewCycle } from "../src/generator.mjs";
 
 test("management preset contains member management structure", () => {
   const plan = buildPlan({ preset: "management-agency", target: "generated-test" });
@@ -188,6 +188,27 @@ test("interview profile is checked against the schema rules", () => {
     assert.throws(check({ modules: ["brand", "brand"] }), /must not repeat/);
     assert.throws(check({ reviewCadence: { weekly: "yes" } }), /reviewCadence\.weekly/);
     assert.throws(check({ coreEntities: "고객" }), /coreEntities must be an array/);
+  } finally {
+    fs.rmSync(temporaryRoot, { recursive: true, force: true });
+  }
+});
+
+test("check-in routine: one log table and a cycle written into AGENTS.md", () => {
+  assert.equal(reviewCycle(undefined), "월간");
+  assert.equal(reviewCycle({ reviewCadence: {} }), "월간");
+  assert.equal(reviewCycle({ reviewCadence: { weekly: true, monthly: true } }), "주간");
+  assert.equal(reviewCycle({ reviewCadence: { quarterly: true } }), "분기");
+  assert.equal(reviewCycle({ reviewCadence: { weekly: false, monthly: false, quarterly: false } }), "없음");
+  const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "soloandco-review-test-"));
+  const target = path.join(temporaryRoot, "workspace");
+  try {
+    generateWorkspace({ preset: "solo-founder", target, name: "Review Co", modules: [] });
+    const log = fs.readFileSync(path.join(target, "영역", "운영", "점검기록.md"), "utf8");
+    assert(log.includes("| 점검일 | 지표 | 직전 기준일 | 지금 기준일 | 변화 | 이유 |"));
+    const agents = fs.readFileSync(path.join(target, "AGENTS.md"), "utf8");
+    assert.match(agents, /점검 주기: 월간/);
+    assert.match(agents, /새 자료 없음/);
+    assert(fs.readFileSync(path.join(target, "README.md"), "utf8").includes("영역/운영/점검기록.md"));
   } finally {
     fs.rmSync(temporaryRoot, { recursive: true, force: true });
   }

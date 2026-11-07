@@ -320,7 +320,7 @@ ${plan.notion ? notionReadmeSection() : ""}## 첫 10분
 }
 
 function agentsMarkdown(plan) {
-  return `# ${plan.name}\n\n이 워크스페이스는 Solo & Co OS \`${plan.preset}\` 프리셋으로 생성되었습니다.\n\n> 이 파일이 AI 도구가 읽는 워크스페이스 규칙의 정본입니다. \`CLAUDE.md\`는 이 파일을 가리키는 포인터입니다.\n\n## 규칙과 스킬의 위치\n\n- 규칙은 이 파일에만 기록하고 \`CLAUDE.md\`에는 복사하지 않습니다.\n- 스킬의 정본은 \`.agents/skills/\`입니다. Codex는 이 폴더를 바로 읽습니다. 관련 작업 전에 그 안의 해당 \`SKILL.md\`를 읽습니다.\n- \`.claude/skills/\`에는 Claude Code가 찾도록 같은 이름의 포인터만 둡니다. 스킬은 \`.agents/skills/\`에서만 고칩니다.\n\n## 필수 온보딩 관문\n\n- 모든 세션은 루트의 \`onboarding.md\`를 먼저 읽고 \`node .soloandco/onboarding-check.mjs\`를 실행합니다.\n- 문서가 없거나 검사가 실패하면 다른 요청보다 온보딩을 먼저 안내합니다. 운영자에게 필수 값을 하나씩 확인받고 문서에 기록합니다.\n- 온보딩 완료 전 허용되는 작업은 온보딩 작성, 기존 자료 수집, 증거 위치 확인뿐입니다.\n- 온보딩 완료 전에는 홈페이지 카피·콘텐츠 원고·마케팅 캠페인·영업 제안·브랜드 메시지를 만들거나 확정하지 않습니다.\n- 값을 기존 문서에서 추정하지 않습니다. 운영자가 확인한 뒤 \`status: active\`로 바꾸고 검사 통과를 확인합니다.\n\n## 운영 규칙\n\n- 폴더 지도는 루트 \`README.md\` 한 곳에 둡니다. 폴더 안 파일이 10개를 넘을 때만 그 폴더에 \`index.md\`를 만듭니다.\n- 가격·연락처·고객·수치처럼 반복되는 기록은 README 「고정 표」의 파일에 한 줄씩 추가합니다. 같은 내용을 요약 문서로 따로 만들지 않습니다.\n- 파일은 목적으로 둡니다. 끝나는 날이 있는 일은 \`프로젝트/YYYY-MM-이름/\`, 계속 맡는 일은 \`영역/\`, 회사 사실(숫자·가격·연락처·결정·보고서)은 \`기업자료/\`에 둡니다.\n- 새로 받은 자료와 둘 곳을 모르는 파일은 \`기업자료/제공자료/\`에 넣습니다. 이름·형식은 바꾸지 않아도 됩니다.\n- 프로젝트가 끝나면 폴더째 \`보관/\`으로 옮깁니다. 지우지 않습니다.\n- 숫자(매출·고객 수·현금 등)는 \`기업자료/핵심지표.md\`에 기준일·출처와 함께 한 줄씩 더합니다. 다른 문서는 이 표를 인용합니다.\n${irAgentsLine(plan)}- 실제 수치가 없으면 \`unknown\`으로 기록합니다.\n- 활성 업무에는 담당자, 다음 행동, 재검토일을 기록합니다.\n- 고객·계약·정산 등 민감 정보는 공개 저장소에 올리지 않습니다.\n- 한 사실에는 하나의 정본만 두고 다른 문서에서는 링크합니다.\n\n${plan.notion ? notionAgentsSection() : notionOffAgentsSection()}`;
+  return `# ${plan.name}\n\n이 워크스페이스는 Solo & Co OS \`${plan.preset}\` 프리셋으로 생성되었습니다.\n\n> 이 파일이 AI 도구가 읽는 워크스페이스 규칙의 정본입니다. \`CLAUDE.md\`는 이 파일을 가리키는 포인터입니다.\n\n## 규칙과 스킬의 위치\n\n- 규칙은 이 파일에만 기록하고 \`CLAUDE.md\`에는 복사하지 않습니다.\n- 스킬의 정본은 \`.agents/skills/\`입니다. Codex는 이 폴더를 바로 읽습니다. 관련 작업 전에 그 안의 해당 \`SKILL.md\`를 읽습니다.\n- \`.claude/skills/\`에는 Claude Code가 찾도록 같은 이름의 포인터만 둡니다. 스킬은 \`.agents/skills/\`에서만 고칩니다.\n\n## 필수 온보딩 관문\n\n- 모든 세션은 루트의 \`onboarding.md\`를 먼저 읽고 \`node .soloandco/onboarding-check.mjs\`를 실행합니다.\n- 문서가 없거나 검사가 실패하면 다른 요청보다 온보딩을 먼저 안내합니다. 운영자에게 필수 값을 하나씩 확인받고 문서에 기록합니다.\n- 온보딩 완료 전 허용되는 작업은 온보딩 작성, 기존 자료 수집, 증거 위치 확인뿐입니다.\n- 온보딩 완료 전에는 홈페이지 카피·콘텐츠 원고·마케팅 캠페인·영업 제안·브랜드 메시지를 만들거나 확정하지 않습니다.\n- 값을 기존 문서에서 추정하지 않습니다. 운영자가 확인한 뒤 \`status: active\`로 바꾸고 검사 통과를 확인합니다.\n\n## 운영 규칙\n\n- 폴더 지도는 루트 \`README.md\` 한 곳에 둡니다. 폴더 안 파일이 10개를 넘을 때만 그 폴더에 \`index.md\`를 만듭니다.\n- 가격·연락처·고객·수치처럼 반복되는 기록은 README 「고정 표」의 파일에 한 줄씩 추가합니다. 같은 내용을 요약 문서로 따로 만들지 않습니다.\n- 파일은 목적으로 둡니다. 끝나는 날이 있는 일은 \`프로젝트/YYYY-MM-이름/\`, 계속 맡는 일은 \`영역/\`, 회사 사실(숫자·가격·연락처·결정·보고서)은 \`기업자료/\`에 둡니다.\n- 새로 받은 자료와 둘 곳을 모르는 파일은 \`기업자료/제공자료/\`에 넣습니다. 이름·형식은 바꾸지 않아도 됩니다.\n- 프로젝트가 끝나면 폴더째 \`보관/\`으로 옮깁니다. 지우지 않습니다.\n- 숫자(매출·고객 수·현금 등)는 \`기업자료/핵심지표.md\`에 기준일·출처와 함께 한 줄씩 더합니다. 다른 문서는 이 표를 인용합니다.\n${irAgentsLine(plan)}- 실제 수치가 없으면 \`unknown\`으로 기록합니다.\n- 활성 업무에는 담당자, 다음 행동, 재검토일을 기록합니다.\n- 고객·계약·정산 등 민감 정보는 공개 저장소에 올리지 않습니다.\n- 한 사실에는 하나의 정본만 두고 다른 문서에서는 링크합니다.\n\n${reviewAgentsSection(plan)}\n${plan.notion ? notionAgentsSection() : notionOffAgentsSection()}`;
 }
 
 // Claude Code auto-loads CLAUDE.md (not AGENTS.md), so ship a pointer file.
@@ -509,6 +509,7 @@ const recordTables = {
   contacts: "기업자료/연락처.md",
   metrics: "기업자료/핵심지표.md",
   decisions: "기업자료/결정기록.md",
+  review: "영역/운영/점검기록.md",
   pipeline: "영역/고객/고객목록.md",
   counterpartyDir: "영역/고객",
 };
@@ -525,6 +526,7 @@ function tableFileList(tables) {
     { path: tables.pipeline, role: `고객 한 명당 한 줄. 견적서는 「폴더」 칸의 \`${tables.counterpartyDir}/<폴더>/\`에 저장됩니다` },
     { path: tables.metrics, role: "매출·고객 수·현금 같은 숫자. 기준일·출처와 함께, 바뀌면 새 줄" },
     { path: tables.decisions, role: "결정과 이유. 최신이 위로" },
+    { path: tables.review, role: "핵심지표를 직전 값과 비교한 기록. 점검마다 줄을 더함" },
   ];
 }
 
@@ -613,6 +615,51 @@ IR·지원사업·보고서에 들어가는 숫자는 전부 이 표에서 가�
 `;
 }
 
+// ---------- Check-in ----------
+// Metrics are append-only, so change only shows up when someone compares rows. v1 keeps this to one
+// rule and one log table: no script, no config key. The cycle is decided once here and written into
+// AGENTS.md as plain text, which is where the operator changes it.
+const cycleNames = { weekly: "주간", monthly: "월간", quarterly: "분기" };
+
+export function reviewCycle(profile) {
+  const cadence = profile?.reviewCadence;
+  if (!cadence || typeof cadence !== "object") return "월간";
+  for (const key of ["weekly", "monthly", "quarterly"]) {
+    if (cadence[key] === true) return cycleNames[key];
+  }
+  const allOff = ["weekly", "monthly", "quarterly"].every((key) => cadence[key] === false);
+  return allOff ? "없음" : "월간";
+}
+
+function reviewAgentsSection(plan) {
+  const cycle = reviewCycle(plan.profile);
+  const timing = cycle === "없음"
+    ? "- 점검 주기: 없음. 운영자가 「점검」이라고 할 때만 합니다. 이 줄을 \`주간\`·\`월간\`·\`분기\`로 바꾸면 주기 안내가 켜집니다."
+    : `- 점검 주기: ${cycle}. 바꾸려면 이 줄만 고칩니다(주간·월간·분기·없음).
+- 온보딩을 통과한 뒤, 세션을 시작할 때 \`영역/운영/점검기록.md\`의 마지막 점검일이 주기보다 오래됐으면 「점검할 때가 됐습니다」라고 한 번만 말합니다. 다른 일을 막지 않습니다.`;
+  return `## 점검
+
+${timing}
+- 운영자가 「점검」이라고 하면 \`기업자료/핵심지표.md\`의 지표마다 기준일이 가장 최근인 값과 그 직전 값을 비교해 \`영역/운영/점검기록.md\`에 지표당 한 줄을 더합니다.
+- 같은 지표·같은 단위의 실적끼리만 비교합니다. 비고가 \`계획\`·\`추정\`인 줄은 비교하지 않습니다.
+- 변화가 없어도 적습니다. 변화 칸은 \`증가\`·\`감소\`·\`같음\`·\`새 자료 없음\`·\`첫 측정\`·\`unknown\` 중 하나입니다. 지난 점검 뒤 새 줄이 없으면 \`새 자료 없음\`입니다.
+- 같은 점검일에 같은 지표를 두 번 적지 않습니다.
+- 이유는 추측하지 않고 운영자에게 한 번에 묻습니다. 답이 없으면 \`unknown\`. 나중에 알게 된 이유는 기존 줄을 고치지 않고 새 줄로 더합니다.
+- 점검 뒤 운영자가 행동을 정하면 \`기업자료/결정기록.md\`에 적습니다.
+`;
+}
+
+function reviewLogMarkdown(date) {
+  return `${frontmatter({ type: "Table", title: "점검기록", description: "핵심지표를 직전 값과 비교한 기록", date })}
+# 점검기록
+
+점검할 때마다 지표당 한 줄을 더한다. 고치거나 지우지 않는다. 규칙은 \`AGENTS.md\`의 「점검」 절에 있다.
+
+| 점검일 | 지표 | 직전 기준일 | 지금 기준일 | 변화 | 이유 |
+|---|---|---|---|---|---|
+`;
+}
+
 // IR/<라운드>/ is written by the IR tool itself (작업/·최종/·자료/), so the generator only reserves the folder.
 function irAgentsLine(plan) {
   if (!plan.modules.includes("ir")) return "";
@@ -630,6 +677,7 @@ function writeTableFiles(target, plan, date) {
   write(tables.contacts, contactsMarkdown(date));
   write(tables.pipeline, pipelineMarkdown(date, tables.counterpartyDir));
   write(tables.metrics, metricsMarkdown(date));
+  write(tables.review, reviewLogMarkdown(date));
   write(".soloandco/doc-mcp.config.json", `${JSON.stringify(docMcpConfig(target, plan), null, 2)}\n`);
 }
 

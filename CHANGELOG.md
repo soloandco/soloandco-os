@@ -27,6 +27,8 @@ All notable changes are documented here. This project follows Semantic Versionin
 
 - Codex and Claude Code both supported as the working tools: skills are generated in `.agents/skills/` (read by Codex) with a pointer of the same name in `.claude/skills/` for Claude Code; `doc-mcp` README shows the Codex `config.toml` entry; the generated README tells people to open the workspace root in either tool
 
+- check-in routine: `영역/운영/점검기록.md` (append-only comparison log) and a 「점검」 section in `AGENTS.md`. The cycle comes from the interview `reviewCadence` (shortest selected, monthly by default, off when all are false) and is written as one editable line. After onboarding the agent reminds once per session when a check is due; on 「점검」 it compares each metric with its previous dated value, records no-change cases too, and asks for reasons instead of guessing. No script
+
 ### Changed
 
 - the interview prompt moves to `prompts/interview.md` and runs inside Codex or Claude Code, which save the profile and run the generator; `source.provider`/`source.model` record the real tool and model, or `unknown`
