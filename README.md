@@ -108,20 +108,16 @@ IR 제작 도구는 `기업자료/`에서 회사 사실을 읽고 `IR/<라운드
 
 ## 빠른 시작 (파일 워크스페이스)
 
-Node.js 20 이상이 필요합니다. `--preset`을 주면 노션 템플릿 질문을 건너뛰고, 노션 연동 여부만 한 번 묻습니다(아래 「노션 연동」).
+Node.js 20 이상이 필요합니다. 생성기는 `npm install` 없이 바로 돌아갑니다. 견적서 도구를 쓸 때만 저장소 루트에서 `npm install`을 한 번 실행합니다([견적서 도구 안내](packages/doc-mcp/README.md)). `--preset`을 주면 노션 템플릿 질문을 건너뛰고, 노션 연동 여부만 한 번 묻습니다(아래 「노션 연동」).
 
-> 터미널이 낯설면 Claude Code 같은 AI 코딩 도구에 이 README 주소를 주고 「이대로 설치해 줘」라고 하면 됩니다. Node.js 설치부터 워크스페이스 생성까지 대신 진행합니다.
+> 터미널이 낯설면 Codex나 Claude Code에 이 README 주소를 주고 「이대로 설치해 줘」라고 하면 됩니다. Node.js 설치부터 워크스페이스 생성까지 대신 진행합니다.
 
 ```bash
 git clone https://github.com/soloandco/soloandco-os.git
 cd soloandco-os
 npm test
 
-node ./bin/create-soloandco-os.mjs \
-  --preset solo-founder \
-  --modules automation,brand,content,website \
-  --target ../my-business-os \
-  --name "My Business"
+node ./bin/create-soloandco-os.mjs --preset solo-founder --modules automation,brand,content,website --target ../my-business-os --name "My Business"
 ```
 
 생성된 워크스페이스는 `onboarding.md`가 `blocked`인 상태로 시작합니다. 필수는 네 가지입니다. 가장 먼저 데려올 고객, 판매 상품, 팔지 않는 고객, 실제로 결과를 낸 적 있는 일. 이 넷을 운영자와 확인해 채우고 `status: active`로 바꾼 뒤 검사합니다. 구매 계기·반론·증거 같은 나머지 항목은 비워 두고 시작해도 됩니다.
@@ -153,10 +149,7 @@ node .soloandco/onboarding-check.mjs
 생성 전에 구조만 확인할 수도 있습니다.
 
 ```bash
-node ./bin/create-soloandco-os.mjs \
-  --preset management-agency \
-  --target ../preview \
-  --dry-run
+node ./bin/create-soloandco-os.mjs --preset management-agency --target ../preview --dry-run
 ```
 
 ## 인터뷰로 생성하기 (Codex·Claude Code)
@@ -167,9 +160,13 @@ node ./bin/create-soloandco-os.mjs \
 4. AI가 `interview-profile.json`을 저장하고 생성기를 실행합니다. 손으로 할 때는 아래 명령입니다.
 
 ```bash
-node ./bin/create-soloandco-os.mjs \
-  --profile ./examples/interview-profile.json \
-  --target ../sample-business-os
+node ./bin/create-soloandco-os.mjs --profile interview-profile.json --target ../my-business-os
+```
+
+인터뷰 없이 예시로 먼저 보려면 예시 프로필을 씁니다.
+
+```bash
+node ./bin/create-soloandco-os.mjs --profile ./examples/interview-profile.json --target ../sample-business-os
 ```
 
 API 키는 필요하지 않습니다. 생성된 워크스페이스는 맨 위 폴더에서 Codex나 Claude Code로 엽니다. 두 도구 모두 `AGENTS.md`를 규칙으로 읽고(Claude Code는 `CLAUDE.md` 포인터를 거침), 스킬은 `.agents/skills/`(Codex)와 그곳을 가리키는 `.claude/skills/`(Claude Code)에 생깁니다.

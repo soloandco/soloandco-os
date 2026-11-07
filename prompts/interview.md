@@ -68,7 +68,7 @@ The final JSON must include:
 
 Then ask the user where the workspace should live, run `node ./bin/create-soloandco-os.mjs --dry-run --profile interview-profile.json --target <path>`, show the planned folders, and run it again without `--dry-run` after the user agrees. Tell the user to open the new folder itself in Codex or Claude Code from now on.
 
-After the workspace is generated, do not start a homepage, content, marketing, sales, or brand deliverable. Open `onboarding.md`, ask the user for every missing required value without guessing, and update the file. Set `status: active` only after the user confirms the values. Run `node .soloandco/onboarding-check.mjs`. Only after it prints `OK: onboarding complete` should you help the user write the first customer, project, or offer record.
+After the workspace is generated, do not start a homepage, content, marketing, sales, or brand deliverable. Open `onboarding.md`, ask the user for every missing required value without guessing, and update the file. Set `status: active` only after the user confirms the values. Run `node .soloandco/onboarding-check.mjs` inside the new workspace folder, not in this repository. Only after it prints `OK: onboarding complete` should you help the user write the first customer, project, or offer record.
 ```
 
 The agent saves the JSON and generates the workspace itself. To do it by hand:

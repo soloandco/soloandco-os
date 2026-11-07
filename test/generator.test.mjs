@@ -498,3 +498,10 @@ test("--notion rejects unknown values and a profile answer is used", () => {
     fs.rmSync(temporaryRoot, { recursive: true, force: true });
   }
 });
+
+test("cli rejects a misspelled option instead of ignoring it", () => {
+  const cli = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1")), "..", "bin", "create-soloandco-os.mjs");
+  const result = spawnSync(process.execPath, [cli, "--notoin", "yes", "--preset", "solo-founder", "--target", "unused"], { encoding: "utf8" });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /Unknown option: --notoin/);
+});

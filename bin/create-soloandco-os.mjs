@@ -66,6 +66,8 @@ async function resolveNotion(explicit, profileValue, dryRun) {
   }
 }
 
+const valueOptions = new Set(["preset", "target", "name", "modules", "notion", "profile", "start"]);
+
 function parseArguments(argv) {
   const result = {};
   for (let index = 0; index < argv.length; index += 1) {
@@ -75,6 +77,7 @@ function parseArguments(argv) {
     else if (argument === "--list") result.list = true;
     else if (argument.startsWith("--")) {
       const key = argument.slice(2);
+      if (!valueOptions.has(key)) throw new Error(`Unknown option: ${argument}. Run with --help to see the options`);
       const value = argv[index + 1];
       if (!value || value.startsWith("--")) throw new Error(`Missing value for ${argument}`);
       result[key] = value;
@@ -123,7 +126,7 @@ async function main() {
   const plan = generateWorkspace(options);
   process.stdout.write(`Created ${plan.preset} workspace at ${plan.target}\n`);
   process.stdout.write("BLOCKED: complete onboarding.md before homepage, content, marketing, sales, or branding work\n");
-  process.stdout.write("Then run: node .soloandco/onboarding-check.mjs\n");
+  process.stdout.write(`Then run inside the new folder: cd "${plan.target}"  then  node .soloandco/onboarding-check.mjs\n`);
   process.stdout.write(
     plan.notion
       ? "Notion: on. Import 영역/운영/노션_업무기록표.md into Notion, then put the table URL in .soloandco/config.json (notion.workLogUrl)\n"
