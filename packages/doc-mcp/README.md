@@ -24,6 +24,17 @@ npm install
 
 ## MCP 클라이언트 등록
 
+Codex는 `~/.codex/config.toml`(또는 신뢰한 프로젝트의 `.codex/config.toml`)에 TOML로 등록한다.
+
+```toml
+[mcp_servers.business-doc-mcp]
+command = "node"
+args = ["/absolute/path/to/packages/doc-mcp/src/server.mjs"]
+env = { DOC_MCP_CONFIG = "/absolute/path/to/workspace/.soloandco/doc-mcp.config.json" }
+```
+
+Claude Code는 아래 JSON 형식이다.
+
 ```json
 {
   "mcpServers": {

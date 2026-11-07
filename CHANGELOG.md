@@ -25,7 +25,13 @@ All notable changes are documented here. This project follows Semantic Versionin
 - `기업자료/핵심지표.md` in every workspace: dated metric rows with source, the single place documents take numbers from
 - install-time Notion choice for file workspaces (`--notion yes|no`, interactive question, or `notion` in the interview profile). Yes adds `영역/운영/노션_업무기록표.md`, a copy of `session-time.mjs`, and `AGENTS.md` rules that log every instructed task in Notion before work starts; no tells agents to stay off Notion. The choice is stored in `.soloandco/config.json`
 
+- Codex and Claude Code both supported as the working tools: skills are generated in `.agents/skills/` (read by Codex) with a pointer of the same name in `.claude/skills/` for Claude Code; `doc-mcp` README shows the Codex `config.toml` entry; the generated README tells people to open the workspace root in either tool
+
 ### Changed
+
+- the interview prompt moves to `prompts/interview.md` and runs inside Codex or Claude Code, which save the profile and run the generator; `source.provider`/`source.model` record the real tool and model, or `unknown`
+- the generated `doc-mcp.config.json` stores `workspace_root` as `..`, resolved against the config file, so the quote tool keeps working after the workspace folder is moved. Absolute roots in older configs still load
+- interview profiles are checked against the rest of the schema: `modules` required and unique, `notion` must be a boolean, string arrays and `reviewCadence` flags typed
 
 - the generated README holds the only folder map; per-folder `index.md` stubs are no longer generated (empty folders get a `.gitkeep`)
 - **breaking**: folders follow PARA with Korean names: `프로젝트/`, `영역/`, `기업자료/`, `보관/` (plus `IR/`). Presets differ only under `영역/`. Record tables move to `기업자료/` (가격·연락처·핵심지표·결정기록) and `영역/고객/고객목록.md` for every preset. `knowledge/_inbox` becomes `기업자료/제공자료/`, the scorecard is replaced by `핵심지표.md`, and `ventures` adds no folder (experiments are projects)

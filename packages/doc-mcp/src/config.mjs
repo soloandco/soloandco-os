@@ -10,6 +10,8 @@ export function loadConfig(configPath) {
   if (!config.workspace_root) {
     throw new Error("config: workspace_root 가 비어 있다");
   }
+  // 상대 경로는 설정 파일이 있는 폴더 기준이다. 워크스페이스를 옮겨도 그대로 동작한다.
+  config.workspace_root = path.resolve(path.dirname(path.resolve(configPath)), config.workspace_root);
   if (!fs.existsSync(config.workspace_root)) {
     throw new Error("config: workspace_root 경로가 없다");
   }
@@ -19,7 +21,6 @@ export function loadConfig(configPath) {
     }
   }
 
-  config.workspace_root = path.resolve(config.workspace_root);
   config.brand = config.brand ?? {};
   return config;
 }

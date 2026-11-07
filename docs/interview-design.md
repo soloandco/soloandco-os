@@ -18,7 +18,7 @@ The confirmed interview summary must conform to [`interview-profile.schema.json`
 
 ## Provider neutrality
 
-Claude Fable 5 is the first documented workflow because long-form interviewing is a natural fit. The JSON contract also supports OpenAI, local models, a web form, or manual authoring.
+The interview runs inside Codex or Claude Code (`prompts/interview.md`), so the same agent saves the profile and runs the generator. The JSON contract also allows a web form or manual authoring.
 
 ## Evaluation
 

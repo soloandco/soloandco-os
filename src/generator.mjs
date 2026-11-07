@@ -28,15 +28,53 @@ export function loadProfile(profilePath) {
   if (!manifest.presets[profile.preset]) {
     errors.push(`preset must be one of: ${Object.keys(manifest.presets).join(", ")}`);
   }
-  if (profile.modules && !Array.isArray(profile.modules)) {
-    errors.push("modules must be an array");
+  if (!Array.isArray(profile.modules)) {
+    errors.push("modules is required and must be an array (use [] for none)");
+  } else {
+    for (const moduleName of profile.modules) {
+      if (!manifest.modules[moduleName]) errors.push(`unknown module: ${moduleName}`);
+    }
+    if (new Set(profile.modules).size !== profile.modules.length) errors.push("modules must not repeat");
   }
-  for (const moduleName of profile.modules ?? []) {
-    if (!manifest.modules[moduleName]) errors.push(`unknown module: ${moduleName}`);
-  }
+  errors.push(...profileFieldErrors(profile));
   errors.push(...brandErrors(profile.brand));
   if (errors.length) throw new Error(`Invalid interview profile:\n- ${errors.join("\n- ")}`);
   return profile;
+}
+
+// The rest of interview-profile.schema.json, checked by hand so the generator stays dependency-free.
+function profileFieldErrors(profile) {
+  const errors = [];
+  if (typeof profile.workspaceName === "string" && profile.workspaceName.length > 100) {
+    errors.push("workspaceName must be 100 characters or fewer");
+  }
+  if (profile.notion !== undefined && typeof profile.notion !== "boolean") {
+    errors.push("notion must be true or false, not a string");
+  }
+  for (const field of ["primaryRevenueModels", "coreEntities", "sensitiveData"]) {
+    const value = profile[field];
+    if (value !== undefined && (!Array.isArray(value) || value.some((item) => typeof item !== "string"))) {
+      errors.push(`${field} must be an array of strings`);
+    }
+  }
+  for (const field of ["currentWorkflow", "biggestOperationalBottleneck"]) {
+    if (profile[field] !== undefined && typeof profile[field] !== "string") errors.push(`${field} must be a string`);
+  }
+  const cadence = profile.reviewCadence;
+  if (cadence !== undefined) {
+    if (typeof cadence !== "object" || cadence === null || Array.isArray(cadence)) errors.push("reviewCadence must be an object");
+    else for (const key of ["weekly", "monthly", "quarterly"]) {
+      if (cadence[key] !== undefined && typeof cadence[key] !== "boolean") errors.push(`reviewCadence.${key} must be true or false`);
+    }
+  }
+  const source = profile.source;
+  if (source !== undefined) {
+    if (typeof source !== "object" || source === null || Array.isArray(source)) errors.push("source must be an object");
+    else for (const key of ["provider", "model", "interviewedAt"]) {
+      if (source[key] !== undefined && typeof source[key] !== "string") errors.push(`source.${key} must be a string`);
+    }
+  }
+  return errors;
 }
 
 function brandErrors(brand) {
@@ -269,19 +307,20 @@ ${tables}
 
 ${plan.notion ? notionReadmeSection() : ""}## 첫 10분
 
-1. 다른 업무보다 먼저 루트의 [필수 온보딩](onboarding.md)을 운영자와 작성합니다.
-2. \`status: active\`로 바꾼 뒤 \`node .soloandco/onboarding-check.mjs\`를 실행합니다.
-3. 검사를 통과한 뒤 현재 진행 중인 고객·멤버·프로젝트 하나를 기록합니다.
-4. 모든 활성 문서에 담당자·다음 행동·재검토일을 둡니다.
-5. 실제 숫자가 없으면 0으로 추정하지 않고 \`unknown\`으로 기록합니다.
-6. 비밀번호·복구 코드·불필요한 개인정보는 저장하지 않습니다.
+1. 이 README가 있는 맨 위 폴더에서 Codex나 Claude Code를 엽니다(\`codex -C <이 폴더>\`, 또는 이 폴더에서 \`claude\`). 하위 폴더에서 열면 규칙 파일 \`AGENTS.md\`를 놓칠 수 있습니다.
+2. 다른 업무보다 먼저 루트의 [필수 온보딩](onboarding.md)을 운영자와 작성합니다.
+3. \`status: active\`로 바꾼 뒤 \`node .soloandco/onboarding-check.mjs\`를 실행합니다.
+4. 검사를 통과한 뒤 현재 진행 중인 고객·멤버·프로젝트 하나를 기록합니다.
+5. 모든 활성 문서에 담당자·다음 행동·재검토일을 둡니다.
+6. 실제 숫자가 없으면 0으로 추정하지 않고 \`unknown\`으로 기록합니다.
+7. 비밀번호·복구 코드·불필요한 개인정보는 저장하지 않습니다.
 
 온보딩을 통과하기 전에는 홈페이지·콘텐츠·마케팅·영업 실행을 시작하지 않습니다. 생성 설정은 \`.soloandco/config.json\`에 있습니다.
 `;
 }
 
 function agentsMarkdown(plan) {
-  return `# ${plan.name}\n\n이 워크스페이스는 Solo & Co OS \`${plan.preset}\` 프리셋으로 생성되었습니다.\n\n> 이 파일이 AI 도구가 읽는 워크스페이스 규칙의 정본입니다. \`CLAUDE.md\`는 이 파일을 가리키는 포인터입니다.\n\n## 규칙과 스킬의 위치\n\n- 규칙은 이 파일에만 기록하고 \`CLAUDE.md\`에는 복사하지 않습니다.\n- 스킬의 정본은 \`.claude/skills/\`입니다. 관련 작업 전에 그 안의 해당 \`SKILL.md\`를 읽습니다.\n\n## 필수 온보딩 관문\n\n- 모든 세션은 루트의 \`onboarding.md\`를 먼저 읽고 \`node .soloandco/onboarding-check.mjs\`를 실행합니다.\n- 문서가 없거나 검사가 실패하면 다른 요청보다 온보딩을 먼저 안내합니다. 운영자에게 필수 값을 하나씩 확인받고 문서에 기록합니다.\n- 온보딩 완료 전 허용되는 작업은 온보딩 작성, 기존 자료 수집, 증거 위치 확인뿐입니다.\n- 온보딩 완료 전에는 홈페이지 카피·콘텐츠 원고·마케팅 캠페인·영업 제안·브랜드 메시지를 만들거나 확정하지 않습니다.\n- 값을 기존 문서에서 추정하지 않습니다. 운영자가 확인한 뒤 \`status: active\`로 바꾸고 검사 통과를 확인합니다.\n\n## 운영 규칙\n\n- 폴더 지도는 루트 \`README.md\` 한 곳에 둡니다. 폴더 안 파일이 10개를 넘을 때만 그 폴더에 \`index.md\`를 만듭니다.\n- 가격·연락처·고객·수치처럼 반복되는 기록은 README 「고정 표」의 파일에 한 줄씩 추가합니다. 같은 내용을 요약 문서로 따로 만들지 않습니다.\n- 파일은 목적으로 둡니다. 끝나는 날이 있는 일은 \`프로젝트/YYYY-MM-이름/\`, 계속 맡는 일은 \`영역/\`, 회사 사실(숫자·가격·연락처·결정·보고서)은 \`기업자료/\`에 둡니다.\n- 새로 받은 자료와 둘 곳을 모르는 파일은 \`기업자료/제공자료/\`에 넣습니다. 이름·형식은 바꾸지 않아도 됩니다.\n- 프로젝트가 끝나면 폴더째 \`보관/\`으로 옮깁니다. 지우지 않습니다.\n- 숫자(매출·고객 수·현금 등)는 \`기업자료/핵심지표.md\`에 기준일·출처와 함께 한 줄씩 더합니다. 다른 문서는 이 표를 인용합니다.\n${irAgentsLine(plan)}- 실제 수치가 없으면 \`unknown\`으로 기록합니다.\n- 활성 업무에는 담당자, 다음 행동, 재검토일을 기록합니다.\n- 고객·계약·정산 등 민감 정보는 공개 저장소에 올리지 않습니다.\n- 한 사실에는 하나의 정본만 두고 다른 문서에서는 링크합니다.\n\n${plan.notion ? notionAgentsSection() : notionOffAgentsSection()}`;
+  return `# ${plan.name}\n\n이 워크스페이스는 Solo & Co OS \`${plan.preset}\` 프리셋으로 생성되었습니다.\n\n> 이 파일이 AI 도구가 읽는 워크스페이스 규칙의 정본입니다. \`CLAUDE.md\`는 이 파일을 가리키는 포인터입니다.\n\n## 규칙과 스킬의 위치\n\n- 규칙은 이 파일에만 기록하고 \`CLAUDE.md\`에는 복사하지 않습니다.\n- 스킬의 정본은 \`.agents/skills/\`입니다. Codex는 이 폴더를 바로 읽습니다. 관련 작업 전에 그 안의 해당 \`SKILL.md\`를 읽습니다.\n- \`.claude/skills/\`에는 Claude Code가 찾도록 같은 이름의 포인터만 둡니다. 스킬은 \`.agents/skills/\`에서만 고칩니다.\n\n## 필수 온보딩 관문\n\n- 모든 세션은 루트의 \`onboarding.md\`를 먼저 읽고 \`node .soloandco/onboarding-check.mjs\`를 실행합니다.\n- 문서가 없거나 검사가 실패하면 다른 요청보다 온보딩을 먼저 안내합니다. 운영자에게 필수 값을 하나씩 확인받고 문서에 기록합니다.\n- 온보딩 완료 전 허용되는 작업은 온보딩 작성, 기존 자료 수집, 증거 위치 확인뿐입니다.\n- 온보딩 완료 전에는 홈페이지 카피·콘텐츠 원고·마케팅 캠페인·영업 제안·브랜드 메시지를 만들거나 확정하지 않습니다.\n- 값을 기존 문서에서 추정하지 않습니다. 운영자가 확인한 뒤 \`status: active\`로 바꾸고 검사 통과를 확인합니다.\n\n## 운영 규칙\n\n- 폴더 지도는 루트 \`README.md\` 한 곳에 둡니다. 폴더 안 파일이 10개를 넘을 때만 그 폴더에 \`index.md\`를 만듭니다.\n- 가격·연락처·고객·수치처럼 반복되는 기록은 README 「고정 표」의 파일에 한 줄씩 추가합니다. 같은 내용을 요약 문서로 따로 만들지 않습니다.\n- 파일은 목적으로 둡니다. 끝나는 날이 있는 일은 \`프로젝트/YYYY-MM-이름/\`, 계속 맡는 일은 \`영역/\`, 회사 사실(숫자·가격·연락처·결정·보고서)은 \`기업자료/\`에 둡니다.\n- 새로 받은 자료와 둘 곳을 모르는 파일은 \`기업자료/제공자료/\`에 넣습니다. 이름·형식은 바꾸지 않아도 됩니다.\n- 프로젝트가 끝나면 폴더째 \`보관/\`으로 옮깁니다. 지우지 않습니다.\n- 숫자(매출·고객 수·현금 등)는 \`기업자료/핵심지표.md\`에 기준일·출처와 함께 한 줄씩 더합니다. 다른 문서는 이 표를 인용합니다.\n${irAgentsLine(plan)}- 실제 수치가 없으면 \`unknown\`으로 기록합니다.\n- 활성 업무에는 담당자, 다음 행동, 재검토일을 기록합니다.\n- 고객·계약·정산 등 민감 정보는 공개 저장소에 올리지 않습니다.\n- 한 사실에는 하나의 정본만 두고 다른 문서에서는 링크합니다.\n\n${plan.notion ? notionAgentsSection() : notionOffAgentsSection()}`;
 }
 
 // Claude Code auto-loads CLAUDE.md (not AGENTS.md), so ship a pointer file.
@@ -356,7 +395,7 @@ function brandGuidelinesMarkdown(plan, date) {
   })}
 # 브랜드 규격
 
-브랜드 값의 정본은 \`.claude/skills/${workspaceSlug(plan.name)}-brand/SKILL.md\` 하나다. 에이전트가 산출물을 만들 때 읽는 파일이 그쪽이기 때문이다. 이 문서는 사람이 읽고 처음 값을 채우는 안내판이며, 스킬에 값이 들어간 뒤에는 값 변경을 스킬에서만 한다. 두 파일의 값이 다르면 스킬을 따른다.
+브랜드 값의 정본은 \`.agents/skills/${workspaceSlug(plan.name)}-brand/SKILL.md\` 하나다. 에이전트가 산출물을 만들 때 읽는 파일이 그쪽이기 때문이다(Claude Code는 \`.claude/skills/\`의 포인터를 거쳐 같은 파일을 읽는다). 이 문서는 사람이 읽고 처음 값을 채우는 안내판이며, 스킬에 값이 들어간 뒤에는 값 변경을 스킬에서만 한다. 두 파일의 값이 다르면 스킬을 따른다.
 
 ## 색
 
@@ -386,10 +425,20 @@ ${avoid}
 `;
 }
 
+function brandSkillDescription(plan) {
+  return `${plan.name}의 브랜드 색·서체 규격. ${plan.name} 이름으로 나가는 소개서·제안서·슬라이드·웹페이지·도식·썸네일을 만들거나 고칠 때 사용한다. 트리거 - 브랜드 색, 우리 색, 로고 색, 소개서, 제안서, 슬라이드.`;
+}
+
+// Claude Code only discovers .claude/skills/. This pointer sends it to the one canonical file Codex reads.
+function brandSkillPointerMarkdown(plan) {
+  const slug = workspaceSlug(plan.name);
+  return `---\nname: ${slug}-brand\ndescription: ${brandSkillDescription(plan)}\n---\n\n# ${plan.name} 브랜드 규격 (포인터)\n\n정본은 \`.agents/skills/${slug}-brand/SKILL.md\`다. 지금 그 파일을 읽고 그대로 따른다. 값은 그 파일에서만 고치고, 이 파일에는 값을 적지 않는다.\n`;
+}
+
 function brandSkillMarkdown(plan) {
   const brand = brandData(plan);
   const slug = workspaceSlug(plan.name);
-  const description = `${plan.name}의 브랜드 색·서체 규격. ${plan.name} 이름으로 나가는 소개서·제안서·슬라이드·웹페이지·도식·썸네일을 만들거나 고칠 때 사용한다. 트리거 - 브랜드 색, 우리 색, 로고 색, 소개서, 제안서, 슬라이드.`;
+  const description = brandSkillDescription(plan);
   const header = `---\nname: ${slug}-brand\ndescription: ${description}\n---\n\n# ${plan.name} 브랜드 규격\n\n색·서체 값의 정본은 이 파일이다. \`기업자료/브랜드/브랜드_규격.md\`는 처음 값을 채울 때 쓰는 안내판이며, 값 변경은 여기서만 한다.\n`;
 
   if (!brand.colors.length) {
@@ -433,9 +482,13 @@ ${brandCss(brand)}
 
 function writeBrandFiles(target, plan, date) {
   fs.writeFileSync(path.join(target, "기업자료", "브랜드", "브랜드_규격.md"), brandGuidelinesMarkdown(plan, date), "utf8");
-  const skillDirectory = path.join(target, ".claude", "skills", `${workspaceSlug(plan.name)}-brand`);
-  fs.mkdirSync(skillDirectory, { recursive: true });
-  fs.writeFileSync(path.join(skillDirectory, "SKILL.md"), brandSkillMarkdown(plan), "utf8");
+  const skillName = `${workspaceSlug(plan.name)}-brand`;
+  const canonical = path.join(target, ".agents", "skills", skillName);
+  const pointer = path.join(target, ".claude", "skills", skillName);
+  fs.mkdirSync(canonical, { recursive: true });
+  fs.mkdirSync(pointer, { recursive: true });
+  fs.writeFileSync(path.join(canonical, "SKILL.md"), brandSkillMarkdown(plan), "utf8");
+  fs.writeFileSync(path.join(pointer, "SKILL.md"), brandSkillPointerMarkdown(plan), "utf8");
 }
 
 function writeStarterFiles(target, plan, date) {
@@ -517,7 +570,8 @@ function docMcpConfig(target, plan) {
   const brand = brandData(plan);
   const accent = brand.colors[0]?.textHex ?? brand.colors[0]?.hex ?? "";
   return {
-    workspace_root: target.split(path.sep).join("/"),
+    // Relative to this config file (.soloandco/), so the workspace keeps working after it is moved.
+    workspace_root: "..",
     pricing: {
       path: tables.pricing,
       fields: { metric: "수치", key: "키", value: "값", source: "정본", verified_at: "확인일" },

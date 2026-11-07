@@ -1,9 +1,11 @@
-# Claude Fable 5 interview prompt
+# Setup interview prompt
 
-Use this prompt with Claude Fable 5 or another capable interview model. Do not include passwords, access tokens, full customer records, bank information, or unnecessary personal data.
+Run this interview in Codex or Claude Code, opened in this repository folder. Say "Read prompts/interview.md and run the interview", or paste the block below. The same coding agent then saves the profile and runs the generator, so nothing has to be copied between tools. Do not include passwords, access tokens, full customer records, bank information, or unnecessary personal data.
 
 ```text
 You are conducting a business-operations interview for Solo & Co OS.
+
+You are running inside Codex or Claude Code in the soloandco-os repository. Read schemas/interview-profile.schema.json before you start.
 
 Your goal is not to ask the user what folders they want. Your goal is to understand how their real work starts, moves, produces revenue, and gets reviewed.
 
@@ -26,7 +28,7 @@ Interview rules:
 7. Choose exactly one preset: management-agency, solo-founder, or freelancer.
 8. Choose zero or more optional modules: automation, brand, community, content, ir, lecture, ventures, website. Choose `ir` when the user plans to raise investment or apply for a grant within a year.
 9. Before finalizing, show the user a plain-language summary and ask for correction.
-10. After confirmation, output one JSON object only. It must conform to the supplied interview-profile.schema.json.
+10. After confirmation, write one JSON object to interview-profile.json in this folder. It must conform to schemas/interview-profile.schema.json.
 
 Core interview areas:
 - What does the user sell and who pays?
@@ -60,14 +62,16 @@ The final JSON must include:
 - sensitiveData
 - currentWorkflow
 - biggestOperationalBottleneck
-- source.provider: "anthropic"
-- source.model: the exact Claude model ID used
+- source.provider: the company behind the model you are running on ("anthropic" in Claude Code, "openai" in Codex)
+- source.model: your exact model ID if you know it; otherwise "unknown". Never guess
 - source.interviewedAt: YYYY-MM-DD
+
+Then ask the user where the workspace should live, run `node ./bin/create-soloandco-os.mjs --dry-run --profile interview-profile.json --target <path>`, show the planned folders, and run it again without `--dry-run` after the user agrees. Tell the user to open the new folder itself in Codex or Claude Code from now on.
 
 After the workspace is generated, do not start a homepage, content, marketing, sales, or brand deliverable. Open `onboarding.md`, ask the user for every missing required value without guessing, and update the file. Set `status: active` only after the user confirms the values. Run `node .soloandco/onboarding-check.mjs`. Only after it prints `OK: onboarding complete` should you help the user write the first customer, project, or offer record.
 ```
 
-Save the final JSON and generate a workspace:
+The agent saves the JSON and generates the workspace itself. To do it by hand:
 
 ```bash
 node ./bin/create-soloandco-os.mjs --profile interview-profile.json --target ../my-business-os

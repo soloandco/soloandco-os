@@ -25,7 +25,7 @@ The model does not decide arbitrary paths or mutate the destination directly. It
 
 ## Brand as machine-readable output
 
-The `brand` module writes the same values twice: `기업자료/브랜드/브랜드_규격.md` for people and `.claude/skills/<slug>-brand/SKILL.md` for AI coding tools. The guidelines file is canonical; the skill is a derived copy that assistants load automatically.
+The `brand` module writes the same values twice: `기업자료/브랜드/브랜드_규격.md` for people and `.agents/skills/<slug>-brand/SKILL.md` for AI coding tools. The skill is canonical once values are filled; Codex loads it from `.agents/skills/`, and Claude Code loads a same-name pointer in `.claude/skills/` that sends it to the canonical file.
 
 Duplication is deliberate. A brand guide that only humans can read has to be re-explained to an assistant on every document. Writing it in the assistant's own format removes that step.
 

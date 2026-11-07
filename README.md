@@ -13,7 +13,7 @@
 - AI는 인터뷰와 분류를 담당하고, 결정론적 생성기가 폴더를 만듭니다.
 - 같은 인터뷰 JSON은 같은 프리셋·모듈 구조를 만듭니다.
 - 생성 직후 고객·상품 필수 온보딩을 완료하기 전에는 홈페이지·콘텐츠·마케팅·영업 실행을 차단합니다.
-- Claude Fable 5를 사용할 수 있지만 특정 AI 제공자에 종속되지 않습니다.
+- Codex나 Claude Code로 세팅하고 씁니다. 둘 중 어느 쪽을 써도 같은 규칙과 스킬을 읽습니다.
 - 계약·고객·재무 등 민감 정보가 공개 예제에 포함되지 않도록 설계합니다.
 
 ## 프리셋
@@ -75,7 +75,7 @@ IR 제작 도구는 `기업자료/`에서 회사 사실을 읽고 `IR/<라운드
 | 파일 | 읽는 대상 |
 |---|---|
 | `기업자료/브랜드/브랜드_규격.md` | 사람. 처음 값을 채우는 안내판 |
-| `.claude/skills/<이름>-brand/SKILL.md` | AI 코딩 도구 |
+| `.agents/skills/<이름>-brand/SKILL.md` | Codex·Claude Code. 값의 정본 (`.claude/skills/`에는 이곳을 가리키는 포인터) |
 
 인터뷰에서 홈페이지·소개 자료의 실제 색과 서체를 뽑아 두 파일에 채웁니다. 그다음부터는 "소개서 만들어줘"라고만 해도 자기 브랜드 색으로 나옵니다. 매번 색을 다시 불러줄 필요가 없습니다.
 
@@ -157,12 +157,12 @@ node ./bin/create-soloandco-os.mjs \
   --dry-run
 ```
 
-## Claude Fable 5 인터뷰로 생성하기
+## 인터뷰로 생성하기 (Codex·Claude Code)
 
-1. [`prompts/claude-fable-interview.md`](prompts/claude-fable-interview.md)를 Claude Fable 5에 제공합니다.
-2. [`schemas/interview-profile.schema.json`](schemas/interview-profile.schema.json)을 함께 제공합니다.
-3. 인터뷰가 끝나면 JSON 요약을 사용자에게 확인받습니다.
-4. JSON을 저장하고 생성기에 전달합니다.
+1. 이 저장소 폴더에서 Codex나 Claude Code를 엽니다.
+2. 「`prompts/interview.md`를 읽고 인터뷰를 진행해 줘」라고 말합니다. 질문 형식은 [`schemas/interview-profile.schema.json`](schemas/interview-profile.schema.json)을 따릅니다.
+3. 인터뷰가 끝나면 AI가 요약을 보여 주고 확인을 받습니다.
+4. AI가 `interview-profile.json`을 저장하고 생성기를 실행합니다. 손으로 할 때는 아래 명령입니다.
 
 ```bash
 node ./bin/create-soloandco-os.mjs \
@@ -170,7 +170,7 @@ node ./bin/create-soloandco-os.mjs \
   --target ../sample-business-os
 ```
 
-Claude API 키는 이 프로젝트에 필요하지 않습니다. 인터뷰 모델이 만든 표준 JSON만 전달하면 됩니다.
+API 키는 필요하지 않습니다. 생성된 워크스페이스는 맨 위 폴더에서 Codex나 Claude Code로 엽니다. 두 도구 모두 `AGENTS.md`를 규칙으로 읽고(Claude Code는 `CLAUDE.md` 포인터를 거침), 스킬은 `.agents/skills/`(Codex)와 그곳을 가리키는 `.claude/skills/`(Claude Code)에 생깁니다.
 
 ## 검증
 
@@ -211,7 +211,6 @@ test/       생성·검증·안전 테스트
 - 익명화 검사와 공개 내보내기 도구
 - 프리셋 업데이트·마이그레이션
 - npm `create-soloandco-os` 배포
-- Claude·OpenAI 선택형 인터뷰 어댑터
 
 ## 지원과 기여 범위
 

@@ -31,7 +31,9 @@
     "solo-founder",
     "freelancer",
     "workspace-generator",
-    "claude"
+    "claude",
+    "codex",
+    "claude-code"
   ],
   "license": "Apache-2.0",
   "repository": {

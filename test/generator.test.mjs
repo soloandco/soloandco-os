@@ -138,14 +138,19 @@ test("brand module writes guidelines and an agent skill carrying the profile val
     assert(guidelines.includes("#1A2B3C"));
     assert(guidelines.includes("Test Sans"));
     // the skill file is the single source of truth for brand values
-    assert(guidelines.includes(".claude/skills/sample-studio-brand/SKILL.md"));
+    assert(guidelines.includes(".agents/skills/sample-studio-brand/SKILL.md"));
 
     // CLAUDE.md must exist as a pointer to AGENTS.md (Claude Code auto-loads CLAUDE.md only)
     const claudePointer = fs.readFileSync(path.join(target, "CLAUDE.md"), "utf8");
     assert(claudePointer.includes("AGENTS.md"));
 
-    const skillPath = path.join(target, ".claude", "skills", "sample-studio-brand", "SKILL.md");
+    // Codex reads .agents/skills/ (canonical); Claude Code reads a pointer in .claude/skills/
+    const skillPath = path.join(target, ".agents", "skills", "sample-studio-brand", "SKILL.md");
     const skill = fs.readFileSync(skillPath, "utf8");
+    const pointer = fs.readFileSync(path.join(target, ".claude", "skills", "sample-studio-brand", "SKILL.md"), "utf8");
+    assert(pointer.includes("name: sample-studio-brand"));
+    assert(pointer.includes(".agents/skills/sample-studio-brand/SKILL.md"));
+    assert(!pointer.includes("#1A2B3C"));
     assert(skill.includes("name: sample-studio-brand"));
     assert(skill.includes("#1A2B3C"));
     assert(skill.includes("#2C6438"));
@@ -160,9 +165,29 @@ test("brand files stay blank and self-disabling when the profile has no brand va
   const target = path.join(temporaryRoot, "workspace");
   try {
     generateWorkspace({ preset: "freelancer", target, name: "Blank Co", modules: ["brand"] });
-    const skill = fs.readFileSync(path.join(target, ".claude", "skills", "blank-co-brand", "SKILL.md"), "utf8");
+    const skill = fs.readFileSync(path.join(target, ".agents", "skills", "blank-co-brand", "SKILL.md"), "utf8");
     assert(skill.includes("아직 채워지지 않았다"));
     assert(!skill.includes("#1A2B3C"));
+  } finally {
+    fs.rmSync(temporaryRoot, { recursive: true, force: true });
+  }
+});
+
+test("interview profile is checked against the schema rules", () => {
+  const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "soloandco-profile-rules-"));
+  const profilePath = path.join(temporaryRoot, "profile.json");
+  const base = { schemaVersion: "0.2.0", workspaceName: "Rule Co", preset: "freelancer", modules: [] };
+  const check = (extra) => {
+    fs.writeFileSync(profilePath, JSON.stringify({ ...base, ...extra }));
+    return () => loadProfile(profilePath);
+  };
+  try {
+    assert.doesNotThrow(check({ notion: true, source: { provider: "openai", model: "unknown" } }));
+    assert.throws(check({ notion: "true" }), /notion must be true or false/);
+    assert.throws(check({ modules: undefined }), /modules is required/);
+    assert.throws(check({ modules: ["brand", "brand"] }), /must not repeat/);
+    assert.throws(check({ reviewCadence: { weekly: "yes" } }), /reviewCadence\.weekly/);
+    assert.throws(check({ coreEntities: "고객" }), /coreEntities must be an array/);
   } finally {
     fs.rmSync(temporaryRoot, { recursive: true, force: true });
   }
@@ -181,7 +206,8 @@ test("generator creates starter files and refuses overwrite", () => {
     assert(fs.existsSync(path.join(target, "기업자료", "핵심지표.md")));
     assert.match(fs.readFileSync(path.join(target, "AGENTS.md"), "utf8"), /필수 온보딩 관문/);
     assert.doesNotMatch(fs.readFileSync(path.join(target, "AGENTS.md"), "utf8"), /Claude와 Codex에 동일하게 적용/);
-    assert.match(fs.readFileSync(path.join(target, "AGENTS.md"), "utf8"), /\.claude\/skills/);
+    assert.match(fs.readFileSync(path.join(target, "AGENTS.md"), "utf8"), /\.agents\/skills/);
+    assert.match(fs.readFileSync(path.join(target, "README.md"), "utf8"), /codex -C/);
     assert.match(fs.readFileSync(path.join(target, "CLAUDE.md"), "utf8"), /AGENTS\.md/);
     assert.match(fs.readFileSync(path.join(target, "README.md"), "utf8"), /`영역\/영업\/` \| [^|]+ \| 온보딩 후 \|/);
     assert(!fs.existsSync(path.join(target, "영역", "영업", "index.md")));
@@ -324,6 +350,14 @@ for (const preset of ["solo-founder", "freelancer", "management-agency"]) {
       // no per-folder index stubs; empty folders keep a .gitkeep instead
       assert(!fs.existsSync(path.join(target, "기업자료", "index.md")));
       assert(fs.existsSync(path.join(target, "기업자료", "제공자료", ".gitkeep")));
+
+      // the quote tool keeps working after the workspace folder is moved
+      assert.equal(config.workspace_root, "..");
+      const moved = path.join(temporaryRoot, "moved");
+      fs.renameSync(target, moved);
+      const reloaded = loadConfig(path.join(moved, ".soloandco", "doc-mcp.config.json"));
+      assert.equal(reloaded.workspace_root, moved);
+      fs.renameSync(moved, target);
     } finally {
       fs.rmSync(temporaryRoot, { recursive: true, force: true });
     }
